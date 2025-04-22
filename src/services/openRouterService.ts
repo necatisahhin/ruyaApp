@@ -48,25 +48,36 @@ const formatAIResponse = (text: string): string => {
  * @param title Rüya başlığı
  * @param description Rüya detaylı açıklaması
  * @param category Rüya kategorisi (opsiyonel)
+ * @param userProfile Kullanıcı profil bilgileri (opsiyonel)
  * @returns API yanıtı - Yorumlanmış rüya bilgisi
  */
 export const interpretDream = async (
   title: string,
   description: string,
-  category?: string
+  category?: string,
+  userProfile?: {
+    age?: number;
+    gender?: string;
+    maritalStatus?: string;
+  }
 ): Promise<string> => {
   try {
     // İslamik usullere uygun rüya yorumlama promptu
     const prompt = `Sen çok iyi bir İslami rüya yorumcususun. 
     Lütfen aşağıdaki rüyayı İslami kaynaklara ve usullere göre detaylı olarak yorumla. 
     
-    Rüya Başlığı: ${title}
-    ${category ? `Rüya Kategorisi: ${category}` : ""}
     Rüya Anlatımı: ${description}
     
+    ${userProfile?.age ? `Rüya Sahibinin Yaşı: ${userProfile.age}` : ""}
+    ${userProfile?.gender ? `Rüya Sahibinin Cinsiyeti: ${userProfile.gender}` : ""}
+    ${userProfile?.maritalStatus ? `Rüya Sahibinin Medeni Hali: ${userProfile.maritalStatus}` : ""}
+    
     Önce rüyadaki sembolleri İslami kaynaklarda ne anlama geldiğini açıkla,
-    sonra genel yorumunu belirt. Son olarak rüya sahibine tavsiyeler ver.
-    Cevabını düzenli paragraflar halinde ve anlaşılır bir Türkçe ile yap.`;
+    sonra genel yorumunu belirt. Yorumunda rüya sahibinin yaşını, cinsiyetini ve medeni halini göz önünde bulundur.
+    Son olarak rüya sahibine tavsiyeler ver.
+    Cevabını düzenli paragraflar halinde ve anlaşılır bir Türkçe ile yap.
+    
+    NOT: Rüya yorumunda başlık ve kategori bilgisini dikkate alma, bunun yerine rüya içeriğini ve kişinin demografik bilgilerini (yaş, cinsiyet, medeni hal) baz al.`;
 
     const response = await openRouterApi.post("/chat/completions", {
       model: "deepseek/deepseek-r1:free",

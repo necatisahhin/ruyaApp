@@ -1,20 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import { View, TouchableOpacity, Platform, Animated } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withDelay,
-  withSequence,
-  withTiming,
-  Easing,
-  runOnJS,
-} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import styles from "./CustomTabBarStyles";
 
+// Basit animasyonlu TabBar bileşeni
 const CustomTabBar: React.FC<BottomTabBarProps> = ({
   state,
   descriptors,
@@ -22,11 +15,11 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
 }) => {
   // SafeAreaInsets hook'u ile cihazın güvenli alanlarını alıyoruz
   const insets = useSafeAreaInsets();
-
-  // Animasyon için useSharedValue değerleri
-  const rotateValues = state.routes.map(() => useSharedValue(0));
-  const scaleValues = state.routes.map(() => useSharedValue(1));
-  const opacityValues = state.routes.map(() => useSharedValue(0));
+  
+  // Her tab için basit animasyon değerleri
+  const [scaleValues] = useState(() => 
+    state.routes.map(() => new Animated.Value(1))
+  );
 
   // Tab ikonlarını belirle
   const getTabIcon = (
@@ -43,61 +36,24 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
     return "home"; // Varsayılan ikon
   };
 
-  // Tab'a tıklanınca animasyon yap
+  // Tab'a tıklanınca basit animasyon yap ve navigasyon yap
   const handleTabPress = (index: number, routeName: string) => {
-    // Dönme animasyonu
-    rotateValues[index].value = withSequence(
-      withTiming(1, { duration: 150 }),
-      withTiming(-1, { duration: 150 }),
-      withTiming(0, { duration: 150 })
-    );
-
-    // Ölçek animasyonu
-    scaleValues[index].value = withSequence(
-      withTiming(1.3, { duration: 150 }),
-      withTiming(0.8, { duration: 100 }),
-      withTiming(1, { duration: 150 })
-    );
-
-    // Basit vurgu animasyonu (orta buton hariç)
-    if (index !== 1) {
-      opacityValues[index].value = withSequence(
-        withTiming(0.6, { duration: 150 }),
-        withTiming(0, { duration: 300 })
-      );
-    }
+    // Çok basit bir ölçek animasyonu
+    Animated.sequence([
+      Animated.timing(scaleValues[index], {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleValues[index], {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
     // Navigasyonu yap
-    const event = navigation.emit({
-      type: "tabPress",
-      target: routeName,
-      canPreventDefault: true,
-    });
-
-    if (!event.defaultPrevented) {
-      navigation.navigate(routeName);
-    }
-  };
-
-  // Animasyon stilleri
-  const getAnimatedStyle = (index: number) => {
-    return useAnimatedStyle(() => {
-      return {
-        transform: [
-          { scale: scaleValues[index].value },
-          { rotate: `${rotateValues[index].value * 30}deg` },
-        ],
-      };
-    });
-  };
-
-  // Vurgu efekti için stil
-  const getHighlightStyle = (index: number) => {
-    return useAnimatedStyle(() => {
-      return {
-        opacity: opacityValues[index].value,
-      };
-    });
+    navigation.navigate(routeName);
   };
 
   return (
@@ -110,6 +66,20 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
           : null,
       ]}
     >
+      <LinearGradient
+        colors={["#2D2D7D", "#4C4CA6", "#6060CF"]}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          borderRadius: 25,
+        }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
@@ -130,9 +100,37 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
               !isMiddleTab && isFocused && styles.activeTabButton,
             ]}
           >
-            {!isMiddleTab && (
-              <Animated.View
-                style={[styles.highlightEffect, getHighlightStyle(index)]}
+            {isMiddleTab && (
+              <LinearGradient
+                colors={["#FF6B6B", "#FF8E53"]}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  borderRadius: hp("4.5%"),
+                }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            )}
+
+            {!isMiddleTab && isFocused && (
+              <LinearGradient
+                colors={["rgba(255, 255, 255, 0.3)", "rgba(255, 255, 255, 0.1)"]}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  borderRadius: hp("3.5%"),
+                  borderWidth: 1,
+                  borderColor: "rgba(255, 255, 255, 0.4)",
+                }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
               />
             )}
 
@@ -140,7 +138,9 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
               style={[
                 styles.tabIcon,
                 isMiddleTab && styles.tabIconMiddle,
-                getAnimatedStyle(index),
+                {
+                  transform: [{ scale: scaleValues[index] }]
+                }
               ]}
             >
               <Ionicons
@@ -155,7 +155,6 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
                 }
               />
             </Animated.View>
-            {/* Tab isimleri kaldırıldı */}
           </TouchableOpacity>
         );
       })}

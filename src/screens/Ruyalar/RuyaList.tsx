@@ -6,19 +6,20 @@ import {
   StyleSheet,
   RefreshControl,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import styles from "./RuyaListStyles";
-import { dummyRuyalar } from "../../data/dummyRuyalar";
 import { Ruya } from "../../models/RuyaModel";
 import RuyaCard from "../../components/RuyaCard/RuyaCard";
 import SearchBar from "../../components/SearchBar/SearchBar";
 import FilterBar from "../../components/FilterBar/FilterBar";
 import EmptyStateMessage from "../../components/EmptyStateMessage/EmptyStateMessage";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from '@react-navigation/stack';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
@@ -33,6 +34,49 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
+// Backend servislerini import ediyorum
+import { getUserDreams, toggleFavorite, deleteDream } from "../../services/dreamService";
+
+// Backend'den gelen veri tipini tanımlıyorum
+interface BackendDreamItem {
+  id: number;
+  title: string;
+  content: string;
+  category?: string;
+  isFavorite?: boolean;
+  interpretation?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  userId?: number;
+}
+
+interface BackendResponse {
+  success: boolean;
+  count: number;
+  data: BackendDreamItem[];
+  message?: string;
+}
+
+// RootStackParamList tipini tanımlıyorum
+type RootStackParamList = {
+  RuyaYorumSonuc: {
+    baslik: string;
+    icerik: string;
+    kategori: string;
+    yorum?: string;
+    tarih?: Date;
+    fromSavedDream: boolean;
+  };
+  RuyaList: {
+    showSearch?: boolean;
+    showFilter?: boolean;
+    toggleSearch?: boolean;
+    toggleFilter?: boolean;
+  };
+};
+
+// Navigation prop tipini tanımlıyorum
+type RuyaListNavigationProp = StackNavigationProp<RootStackParamList, 'RuyaList'>;
 
 interface RuyaListProps {
   route?: {
@@ -51,10 +95,12 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [ruyalar, setRuyalar] = useState<Ruya[]>(dummyRuyalar);
-  const [filteredRuyalar, setFilteredRuyalar] = useState<Ruya[]>(dummyRuyalar);
+  const [ruyalar, setRuyalar] = useState<Ruya[]>([]);
+  const [filteredRuyalar, setFilteredRuyalar] = useState<Ruya[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const navigation = useNavigation();
+  const [loading, setLoading] = useState(true); // Yükleme durumu için yeni state
+  const [error, setError] = useState<string | null>(null); // Hata durumu için yeni state
+  const navigation = useNavigation<RuyaListNavigationProp>();
   const insets = useSafeAreaInsets();
 
   // Arka plan parlaklık efekti için değer
@@ -75,20 +121,20 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
   // Tüm benzersiz kategorileri rüyalardan çıkarma
   const categories = useMemo(() => {
     const allCategories = new Set<string>();
-    ruyalar.forEach((ruya) => {
-      if (ruya.kategori) {
-        allCategories.add(ruya.kategori);
-      }
-    });
+    // ruyalar undefined veya null ise boş dizi olarak işlem yap
+    if (ruyalar && Array.isArray(ruyalar)) {
+      ruyalar.forEach((ruya) => {
+        if (ruya.kategori) {
+          allCategories.add(ruya.kategori);
+        }
+      });
+    }
     return Array.from(allCategories).sort();
   }, [ruyalar]);
 
   // Route params'dan gelen arama ve filtre durumunu kontrol et
   useFocusEffect(
     useCallback(() => {
-      // Bir doğrulama log'u ekleyerek parametreleri görelim
-      console.log("RuyaList params:", route?.params);
-
       // Toggle parametreleri için kontrol ekliyoruz
       if (route?.params?.toggleSearch) {
         // Arama ikonuna tıklandığında arama çubuğunu toggle et
@@ -125,6 +171,12 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
 
   // Arama metni, favori filtreleme veya kategori değiştiğinde filtreleme yap
   useEffect(() => {
+    // ruyalar undefined veya null ise işlem yapma
+    if (!ruyalar || !Array.isArray(ruyalar)) {
+      setFilteredRuyalar([]);
+      return;
+    }
+    
     let filtered = ruyalar;
 
     // Önce metin araması yap
@@ -219,41 +271,199 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
     setFilterVisible(false);
   };
 
-  // Favori durumunu değiştirme fonksiyonu
-  const handleFavoriteToggle = (id: string) => {
-    // Rüyaların kopyasını oluşturuyoruz
-    const updatedRuyalar = ruyalar.map((ruya) =>
-      ruya.id === id ? { ...ruya, isFavorite: !ruya.isFavorite } : ruya
-    );
-
-    // State'i güncelliyoruz
-    setRuyalar(updatedRuyalar);
+  // Backend'den rüyaları çekme fonksiyonu
+  const fetchRuyalar = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getUserDreams() as BackendResponse;
+      
+      // Backend'den gelen veri kontrolü
+      // Backend'den gelen veri bir nesne içinde data dizisi olarak geliyor
+      if (response && typeof response === 'object') {
+        // Eğer response.data bir dizi ise
+        if (response.data && Array.isArray(response.data)) {
+          // Backend'den gelen veriyi Ruya modeline uygun şekilde dönüştür
+          const formattedData: Ruya[] = response.data.map((item: BackendDreamItem) => ({
+            id: item.id.toString(),
+            baslik: item.title,
+            icerik: item.content,
+            kategori: item.category || "Genel",
+            isFavorite: item.isFavorite || false,
+            yorum: item.interpretation,
+            tarih: item.createdAt ? new Date(item.createdAt) : undefined
+          }));
+          
+          setRuyalar(formattedData);
+          setFilteredRuyalar(formattedData);
+        } else if (response.success === false) {
+          // API başarısız oldu
+          console.error("Backend API hatası:", response);
+          setRuyalar([]);
+          setFilteredRuyalar([]);
+          setError("Rüya verileri alınamadı. Lütfen tekrar deneyin.");
+        } else {
+          // Veri formatı beklenen gibi değil
+          console.error("Backend'den gelen veri formatı uygun değil:", response);
+          setRuyalar([]);
+          setFilteredRuyalar([]);
+          setError("Veri formatı uygun değil. Lütfen tekrar deneyin.");
+        }
+      } else {
+        // Eğer veri array değilse boş array olarak ayarla
+        console.error("Backend'den gelen veri uygun formatta değil:", response);
+        setRuyalar([]);
+        setFilteredRuyalar([]);
+        setError("Rüya verileri uygun formatta değil. Lütfen tekrar deneyin.");
+      }
+      
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      setError("Rüyalar yüklenirken bir hata oluştu. Lütfen tekrar deneyin.");
+      // Hata durumunda boş array olarak ayarla
+      setRuyalar([]);
+      setFilteredRuyalar([]);
+      
+      ToastManager.show({
+        message: "Rüyalar yüklenirken bir hata oluştu",
+        type: "error",
+        duration: 3000,
+        position: "top",
+        icon: "alert-circle",
+      });
+      console.error("Rüyalar yüklenirken hata:", err);
+    }
   };
 
-  // Rüyayı silme işlemi için fonksiyon
-  const handleDeleteRuya = (id: string) => {
-    // Silinecek rüyayı dışarıda bırakarak yeni bir dizi oluştur
-    const updatedRuyalar = ruyalar.filter((ruya) => ruya.id !== id);
+  // Sayfa yüklendiğinde ve her odaklandığında rüyaları çek
+  useFocusEffect(
+    useCallback(() => {
+      fetchRuyalar();
+    }, [])
+  );
 
-    // State'i güncelle
-    setRuyalar(updatedRuyalar);
-
-    // Eğer silinen rüya filtrelenmiş rüyalar listesinde ise onu da güncelle
-    setFilteredRuyalar((prev) => prev.filter((ruya) => ruya.id !== id));
+  // Favori durumunu değiştirme fonksiyonu - backend entegrasyonu ile
+  const handleFavoriteToggle = async (id: string) => {
+    try {
+      // ruyalar undefined veya null ise işlem yapma
+      if (!ruyalar || !Array.isArray(ruyalar)) {
+        ToastManager.show({
+          message: "Rüya verileri yüklenemedi, lütfen sayfayı yenileyin",
+          type: "error",
+          duration: 3000,
+          position: "top",
+          icon: "alert-circle",
+        });
+        return;
+      }
+      
+      // Önce UI'ı güncelle (optimistik güncelleme)
+      const currentRuya = ruyalar.find(ruya => ruya.id === id);
+      if (!currentRuya) return;
+      
+      const newFavoriteStatus = !currentRuya.isFavorite;
+      
+      // UI'ı hemen güncelle
+      const updatedRuyalar = ruyalar.map((ruya) =>
+        ruya.id === id ? { ...ruya, isFavorite: newFavoriteStatus } : ruya
+      );
+      setRuyalar(updatedRuyalar);
+      
+      // Backend'e güncelleme gönder - id'yi number'a çevir
+      const numericId = parseInt(id, 10);
+      if (isNaN(numericId)) {
+        throw new Error("Geçersiz rüya ID'si");
+      }
+      
+      await toggleFavorite(numericId, newFavoriteStatus);
+      
+      // Başarılı mesajı göster
+      ToastManager.show({
+        message: newFavoriteStatus 
+          ? "Rüya favorilere eklendi" 
+          : "Rüya favorilerden çıkarıldı",
+        type: "success",
+        duration: 2000,
+        position: "top",
+        icon: newFavoriteStatus ? "star" : "star-outline",
+      });
+    } catch (err) {
+      // Hata durumunda UI'ı eski haline getir
+      fetchRuyalar(); // Verileri yeniden çek
+      
+      ToastManager.show({
+        message: "Favori durumu güncellenirken bir hata oluştu",
+        type: "error",
+        duration: 3000,
+        position: "top",
+        icon: "alert-circle",
+      });
+      console.error("Favori durumu güncellenirken hata:", err);
+    }
   };
 
-  // Yenileme işlemini gerçekleştiren fonksiyon
+  // Rüyayı silme işlemi için fonksiyon - backend entegrasyonu ile
+  const handleDeleteRuya = async (id: string) => {
+    try {
+      // ruyalar undefined veya null ise işlem yapma
+      if (!ruyalar || !Array.isArray(ruyalar)) {
+        ToastManager.show({
+          message: "Rüya verileri yüklenemedi, lütfen sayfayı yenileyin",
+          type: "error",
+          duration: 3000,
+          position: "top",
+          icon: "alert-circle",
+        });
+        return;
+      }
+      
+      // Önce UI'ı güncelle (optimistik silme)
+      const updatedRuyalar = ruyalar.filter((ruya) => ruya.id !== id);
+      setRuyalar(updatedRuyalar);
+      setFilteredRuyalar((prev) => {
+        if (!prev || !Array.isArray(prev)) return [];
+        return prev.filter((ruya) => ruya.id !== id);
+      });
+      
+      // Backend'den sil - id'yi number'a çevir
+      const numericId = parseInt(id, 10);
+      if (isNaN(numericId)) {
+        throw new Error("Geçersiz rüya ID'si");
+      }
+      
+      await deleteDream(numericId);
+      
+      // Başarılı mesajı göster
+      ToastManager.show({
+        message: "Rüya başarıyla silindi",
+        type: "success",
+        duration: 2000,
+        position: "top",
+        icon: "trash",
+      });
+    } catch (err) {
+      // Hata durumunda UI'ı eski haline getir
+      fetchRuyalar(); // Verileri yeniden çek
+      
+      ToastManager.show({
+        message: "Rüya silinirken bir hata oluştu",
+        type: "error",
+        duration: 3000,
+        position: "top",
+        icon: "alert-circle",
+      });
+      console.error("Rüya silinirken hata:", err);
+    }
+  };
+
+  // Yenileme işlemini gerçekleştiren fonksiyon - backend entegrasyonu ile
   const onRefresh = useCallback(() => {
-    setRefreshing(true); // Yenileme durumunu aktif et
-
-    // Gerçek bir uygulamada burada API çağrısı yapılabilir
-    setTimeout(() => {
-      // Yenileme yapıldığını göstermek için mevcut listeyi koruyoruz
-      // Gerçek bir uygulamada burada veritabanından veya API'den veriler çekilir
-      setRuyalar([...ruyalar]); // Aynı listeyi kullanarak state'i güncelliyoruz
-      setRefreshing(false); // Yenileme durumunu kapat
-    }, 1500); // 1.5 saniye sonra yenilemeyi tamamla (örnek süre)
-  }, [ruyalar]);
+    setRefreshing(true);
+    fetchRuyalar().finally(() => {
+      setRefreshing(false);
+    });
+  }, []);
 
   // Rüya yorumunu görüntülemek için fonksiyon
   const handleViewInterpretation = (ruya: Ruya) => {
@@ -269,6 +479,11 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
   };
 
   const renderRuyaItem = ({ item }: { item: Ruya }) => {
+    // item undefined veya null ise boş bir view döndür
+    if (!item) {
+      return <View />;
+    }
+    
     return (
       <RuyaCard
         ruya={item}
@@ -294,7 +509,7 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
     <SafeAreaView style={{ flex: 1 }} edges={["right", "left"]}>
       {/* Background gradient */}
       <LinearGradient
-        colors={["#614385", "#516395", "#A979AA"]}
+        colors={["#1A1A40", "#2C2C6C", "#4B0082"]}
         style={styles.backgroundGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -302,7 +517,7 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
         {/* Parlaklık efekti için iç içe gradient */}
         <Animated.View style={[styles.glowContainer, glowAnimatedStyle]}>
           <LinearGradient
-            colors={["rgba(255,255,255,0.1)", "rgba(106, 53, 107, 0.4)"]}
+            colors={["rgba(255,255,255,0.1)", "rgba(75, 0, 130, 0.4)"]}
             style={styles.glowGradient}
             start={{ x: 0.5, y: 0.5 }}
             end={{ x: 1, y: 1 }}
@@ -356,20 +571,58 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
             </View>
           )}
 
+          {/* Yükleme göstergesi */}
+          {loading && !refreshing && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#FFFFFF" />
+              <Text style={styles.loadingText}>Rüyalar yükleniyor...</Text>
+            </View>
+          )}
+
+          {/* Hata mesajı */}
+          {error && !loading && (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={50} color="#FF6B6B" />
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={fetchRuyalar}
+              >
+                <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <FlatList
-            data={filteredRuyalar}
+            data={filteredRuyalar || []}
             keyExtractor={(item) => item.id}
             renderItem={renderRuyaItem}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
-              <EmptyStateMessage
-                showFavorites={showFavorites}
-                customMessage={
-                  selectedCategories.length > 0
-                    ? "Seçili kategorilerde rüya bulunamadı"
-                    : undefined
-                }
-              />
+              !loading && !error ? (
+                <View style={styles.emptyStateContainer}>
+                  <Ionicons
+                    name={showFavorites ? "star" : "search"}
+                    size={50}
+                    color="rgba(255, 255, 255, 0.8)"
+                    style={styles.emptyStateIcon}
+                  />
+                  <Text style={styles.emptyStateText}>
+                    {showFavorites
+                      ? "Henüz favori rüyanız yok"
+                      : selectedCategories.length > 0
+                      ? "Seçili kategorilerde rüya bulunamadı"
+                      : "Rüya bulunamadı"}
+                  </Text>
+                  <Text style={styles.emptyStateSubText}>
+                    {showFavorites
+                      ? "Favori rüyalarınız burada görünecek"
+                      : selectedCategories.length > 0
+                      ? "Farklı bir kategori seçmeyi deneyin"
+                      : "Yeni bir rüya eklemek için 'Rüya Bak' ekranına gidin"}
+                  </Text>
+                </View>
+              ) : null
             }
             contentContainerStyle={{
               paddingTop:
@@ -384,10 +637,10 @@ const RuyaList: React.FC<RuyaListProps> = ({ route }) => {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                colors={["#6A356B"]}
-                tintColor="#6A356B"
+                colors={["#4B0082"]}
+                tintColor="#4B0082"
                 title="Yenileniyor..."
-                titleColor="#6A356B"
+                titleColor="#4B0082"
                 progressBackgroundColor="#FFFFFF"
                 progressViewOffset={topPadding + hp("2%")}
               />

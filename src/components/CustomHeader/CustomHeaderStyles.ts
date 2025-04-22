@@ -10,24 +10,25 @@ const styles = StyleSheet.create({
     height: hp("8%"),
     width: wp("95%"),
     marginHorizontal: wp("2.5%"),
-    backgroundColor: "#6A356B",
+    backgroundColor: "#2C2C6C",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 15,
+    borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    elevation: 15,
     paddingHorizontal: wp("4%"),
-    // Absolute pozisyon güncelleniyor - top değeri dinamik olarak eklenecek
     position: "absolute",
     left: 0,
     right: 0,
-    zIndex: 1000, // Diğer bileşenlerin üzerinde görünmesi için
+    zIndex: 1000,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
   titleContainer: {
     flex: 1,
@@ -35,9 +36,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
     color: "#FFFFFF",
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   leftButton: {
     width: hp("5%"),
@@ -45,6 +49,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: wp("2%"),
+    borderRadius: hp("2.5%"),
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   rightButtonsContainer: {
     flexDirection: "row",
@@ -58,6 +64,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: wp("1%"),
+    borderRadius: hp("2.5%"),
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
 });
 

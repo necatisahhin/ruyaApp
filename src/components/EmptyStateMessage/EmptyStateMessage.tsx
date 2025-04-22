@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import styles from "./EmptyStateMessageStyles";
 
 interface EmptyStateMessageProps {
@@ -21,12 +22,22 @@ const EmptyStateMessage: React.FC<EmptyStateMessageProps> = ({
   const message = customMessage
     ? customMessage
     : showFavorites
-    ? "Hiç bir favori rüyanız yok eklemeye başlayın"
+    ? "Hiç bir favori rüyanız yok"
     : "Henüz hiç rüya eklenmemiş";
+
+  const subMessage = showFavorites
+    ? "Favori rüyalarınız burada görünecek"
+    : "Yeni bir rüya eklemek için 'Rüya Bak' ekranına gidin";
+
+  const iconName = showFavorites ? "star" : "book";
 
   return (
     <View style={styles.container}>
+      <Ionicons name={iconName} size={50} color="rgba(255, 255, 255, 0.8)" style={{ marginBottom: 15 }} />
       <Text style={styles.text}>{message}</Text>
+      <Text style={[styles.text, { fontSize: 14, marginTop: 10, backgroundColor: 'transparent' }]}>
+        {subMessage}
+      </Text>
     </View>
   );
 };

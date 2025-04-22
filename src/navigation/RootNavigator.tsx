@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { View } from "react-native";
+import { View, ActivityIndicator } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Örnek ekranlar (siz kendi ekranlarınızı oluşturacaksınız)
 import HomeScreen from "../screens/Ruyalar/RuyaList";
 import ProfileScreen from "../screens/Profile/ProfileScreen";
 import RuyaBak from "../screens/RuyaBak/RuyaBakScreen";
 import RuyaYorumSonucScreen from "../screens/RuyaYorumSonuc/RuyaYorumSonucScreen";
+import LoginScreen from "../screens/Auth/LoginScreen";
+import RegisterScreen from "../screens/Auth/RegisterScreen";
 import CustomTabBar from "../components/CustomTabBar/CustomTabBar";
 import CustomHeader from "../components/CustomHeader/CustomHeader";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
@@ -44,6 +47,12 @@ export type RootTabParamList = {
 
 // Stack navigator tipini tanımlayalım
 export type RootStackParamList = {
+  Auth: undefined;
+  Login: {
+    returnScreen?: string;
+    returnParams?: any;
+  } | undefined;
+  Register: undefined;
   TabNavigator: {
     screen?: keyof RootTabParamList;
     params?: {
@@ -56,8 +65,25 @@ export type RootStackParamList = {
   RuyaYorumSonuc: RuyaYorumParams;
 };
 
+// Auth Stack navigator tipini tanımlayalım
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+};
+
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
+const AuthStack = createStackNavigator<AuthStackParamList>();
+
+// Auth Navigator bileşeni
+const AuthNavigator = () => {
+  return (
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Register" component={RegisterScreen} />
+    </AuthStack.Navigator>
+  );
+};
 
 // Tab Navigator bileşeni
 const TabNavigator = () => {
@@ -99,27 +125,17 @@ const TabNavigator = () => {
           ...defaultProps,
           leftIcon: "search" as keyof typeof Ionicons.glyphMap,
           onLeftPress: () => {
-            // Arama ikonuna tıklanınca CommonActions ile doğrudan parametre gönderiyoruz
             navigation.dispatch(
-              CommonActions.navigate({
-                name: "TabNavigator",
-                params: {
-                  screen: "RuyaList",
-                  params: { toggleSearch: true },
-                },
+              CommonActions.setParams({
+                toggleSearch: true,
               })
             );
           },
-          rightIcon: "filter-outline" as keyof typeof Ionicons.glyphMap,
-          onRightPress: () => {
-            // Filtre ikonuna tıklanınca CommonActions ile doğrudan parametre gönderiyoruz
+          rightIcon2: "filter" as keyof typeof Ionicons.glyphMap,
+          onRightPress2: () => {
             navigation.dispatch(
-              CommonActions.navigate({
-                name: "TabNavigator",
-                params: {
-                  screen: "RuyaList",
-                  params: { toggleFilter: true },
-                },
+              CommonActions.setParams({
+                toggleFilter: true,
               })
             );
           },
@@ -127,9 +143,6 @@ const TabNavigator = () => {
       case "RuyaBak":
         return {
           ...defaultProps,
-          rightIcon: "add-circle" as keyof typeof Ionicons.glyphMap,
-          rightIconColor: "#FFD700",
-          onRightPress: () => console.log("Yeni rüya ekle"),
         };
       case "Profil":
         return {
@@ -144,69 +157,68 @@ const TabNavigator = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* CustomHeader'da dinamik başlık ve ekrana özel butonlar kullanıyoruz */}
       <CustomHeader {...getHeaderProps()} />
-
       <Tab.Navigator
-        // ...mevcut kod...
         screenOptions={{
-          headerStyle: {
-            backgroundColor: "#6A356B",
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-          tabBarShowLabel: false,
-          // Custom Header kullandığımız için varsayılan header'ı gizliyoruz
           headerShown: false,
-          // İçerik alanının altında TabBar yüksekliği kadar boşluk bırakmak için
-          tabBarStyle: { height: 0, display: "none" },
+          tabBarStyle: { display: "none" },
         }}
         tabBar={(props) => <CustomTabBar {...props} />}
-        // Tab değişikliğini izliyoruz
         screenListeners={{
           state: (e) => {
             handleTabChange(e.data.state);
           },
         }}
       >
-        <Tab.Screen
-          name="RuyaList"
-          component={HomeScreen}
-          options={{ title: "Rüyalarım" }}
-        />
-        <Tab.Screen
-          name="RuyaBak"
-          component={RuyaBak}
-          options={{ title: "Rüya Bak" }}
-        />
-        <Tab.Screen
-          name="Profil"
-          component={ProfileScreen}
-          options={{ title: "Profil" }}
-        />
+        <Tab.Screen name="RuyaList" component={HomeScreen} />
+        <Tab.Screen name="RuyaBak" component={RuyaBak} />
+        <Tab.Screen name="Profil" component={ProfileScreen} />
       </Tab.Navigator>
     </View>
   );
 };
 
-// Root Navigator bileşeni
+// Ana navigator bileşeni
 const RootNavigator = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const Stack = createStackNavigator<RootStackParamList>();
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      // Basit bir kimlik doğrulama kontrolü
+      const userToken = await AsyncStorage.getItem('userToken');
+      setIsAuthenticated(!!userToken);
+    } catch (error) {
+      console.error("Kimlik doğrulama kontrolü sırasında hata:", error);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#6A11CB" />
+      </View>
+    );
+  }
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
+      initialRouteName={isAuthenticated ? "TabNavigator" : "Auth"}
     >
+      <Stack.Screen name="Auth" component={AuthNavigator} />
       <Stack.Screen name="TabNavigator" component={TabNavigator} />
-      <Stack.Screen
-        name="RuyaYorumSonuc"
-        component={RuyaYorumSonucScreen}
-        options={{
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen name="RuyaYorumSonuc" component={RuyaYorumSonucScreen} />
     </Stack.Navigator>
   );
 };

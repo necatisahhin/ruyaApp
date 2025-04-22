@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Share,
   StatusBar,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -32,6 +33,10 @@ import styles from "./RuyaYorumSonucStyles";
 import { ToastManager } from "../../utils/ToastManager";
 import { Ruya } from "../../models/RuyaModel";
 import { dummyRuyalar } from "../../data/dummyRuyalar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { saveDream } from "../../services/dreamService";
+import { RootStackParamList } from "../../navigation/RootNavigator";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 // UUID kütüphanesi olmadığı için benzersiz ID üretecek basit bir fonksiyon
 const generateUniqueId = () => {
@@ -48,9 +53,12 @@ interface RouteParams {
   fromSavedDream?: boolean; // Kayıtlı rüyadan geliyorsa true olacak yeni parametre
 }
 
+// Navigasyon tipini tanımlayalım
+type RuyaYorumSonucNavigationProp = StackNavigationProp<RootStackParamList>;
+
 const RuyaYorumSonucScreen: React.FC = () => {
   const route = useRoute();
-  const navigation = useNavigation();
+  const navigation = useNavigation<RuyaYorumSonucNavigationProp>();
 
   // Route parametrelerine tiplerini uygulayalım
   const { baslik, icerik, kategori, yorum, tarih, fromSavedDream } =
@@ -58,9 +66,20 @@ const RuyaYorumSonucScreen: React.FC = () => {
 
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Glow efekti için animasyon değeri
   const glowOpacity = useSharedValue(0.6);
+
+  // Kullanıcı giriş durumunu kontrol et
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const userToken = await AsyncStorage.getItem('userToken');
+      setIsLoggedIn(!!userToken);
+    };
+    
+    checkLoginStatus();
+  }, []);
 
   // Animasyon efekti için
   useEffect(() => {
@@ -94,26 +113,55 @@ const RuyaYorumSonucScreen: React.FC = () => {
   };
 
   // Rüyayı kaydetme işlevi
-  const handleSaveToMyDreams = () => {
+  const handleSaveToMyDreams = async () => {
+    // Kullanıcı giriş yapmamışsa uyarı göster
+    if (!isLoggedIn) {
+      Alert.alert(
+        "Giriş Gerekli",
+        "Rüyanızı kaydetmek için giriş yapmanız gerekmektedir.",
+        [
+          { text: "İptal", style: "cancel" },
+          { 
+            text: "Giriş Yap", 
+            onPress: () => navigation.navigate("Login", { 
+              returnScreen: "RuyaYorumSonuc" as keyof RootStackParamList, 
+              returnParams: route.params 
+            })
+          }
+        ]
+      );
+      return;
+    }
+
     setIsLoading(true);
 
-    // Yeni rüya objesi oluştur
-    const newDream: Ruya = {
-      id: generateUniqueId(),
-      baslik: baslik,
-      icerik: icerik,
-      kategori: kategori,
-      tarih: new Date(),
-      isFavorite: false,
-      yorum: yorum,
-    };
+    try {
+      // Backend'e rüya kaydetme isteği gönder
+      const dreamData = {
+        title: baslik,
+        content: icerik,
+        category: kategori || "Genel",
+        interpretation: yorum
+      };
 
-    // Simüle edilmiş asenkron kaydetme işlemi
-    setTimeout(() => {
-      try {
-        dummyRuyalar.unshift(newDream);
+      const response = await saveDream(dreamData);
+
+      // Başarılı kayıt
+      if (response.success) {
         setIsSaved(true);
-        setIsLoading(false);
+        
+        // Aynı zamanda yerel dummy verilere de ekleyelim (geçici çözüm)
+        const newDream: Ruya = {
+          id: response.data.id.toString(),
+          baslik: baslik,
+          icerik: icerik,
+          kategori: kategori || "Genel",
+          tarih: new Date(),
+          isFavorite: false,
+          yorum: yorum,
+        };
+        
+        dummyRuyalar.unshift(newDream);
 
         ToastManager.show({
           message: "Rüyanız başarıyla kaydedildi!",
@@ -123,18 +171,20 @@ const RuyaYorumSonucScreen: React.FC = () => {
           icon: "checkmark-circle",
           iconColor: "#4CAF50",
         });
-      } catch (error) {
-        setIsLoading(false);
-        ToastManager.show({
-          message: "Rüya kaydedilirken bir hata oluştu.",
-          type: "error",
-          position: "top",
-          duration: 3000,
-          icon: "alert-circle",
-          iconColor: "#FF5252",
-        });
       }
-    }, 1000);
+    } catch (error) {
+      console.error("Rüya kaydetme hatası:", error);
+      ToastManager.show({
+        message: "Rüya kaydedilirken bir hata oluştu.",
+        type: "error",
+        position: "top",
+        duration: 3000,
+        icon: "alert-circle",
+        iconColor: "#FF5252",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Paylaşma işlevi
@@ -151,24 +201,21 @@ const RuyaYorumSonucScreen: React.FC = () => {
         message: "Paylaşım sırasında bir hata oluştu.",
         type: "error",
         position: "top",
-        duration: 2000,
+        duration: 3000,
         icon: "alert-circle",
         iconColor: "#FF5252",
       });
     }
   };
 
-  // Geri buton işleyicisi
+  // Geri gitme işlevi
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  // Rüyalarım sayfasına git
+  // Rüyalarım sayfasına gitme işlevi
   const handleGoToMyDreams = () => {
-    // İç içe geçmiş navigatörlerde doğru yönlendirme yapısı
-    navigation.navigate("TabNavigator", {
-      screen: "RuyaList",
-    });
+    navigation.navigate("TabNavigator", { screen: "RuyaBak" });
   };
 
   return (

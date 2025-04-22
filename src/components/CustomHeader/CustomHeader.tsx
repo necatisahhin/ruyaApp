@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import styles from "./CustomHeaderStyles";
 
 interface CustomHeaderProps {
@@ -88,20 +90,36 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
         { top: insets.top },
       ]}
     >
+      <LinearGradient
+        colors={["#2D2D7D", "#4C4CA6", "#6060CF"]}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          borderRadius: 20,
+        }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      />
+
       {/* Sol taraf - Geri butonu veya özel ikon */}
-      <TouchableOpacity
-        style={styles.leftButton}
-        onPress={handleLeftButtonPress}
-        disabled={!showBackButton && !onLeftPress && !leftIcon}
-      >
-        {showBackButton ? (
-          <Ionicons name="arrow-back" size={24} color={leftIconColor} />
-        ) : leftIcon ? (
-          <Ionicons name={leftIcon} size={24} color={leftIconColor} />
-        ) : (
-          <View />
-        )}
-      </TouchableOpacity>
+      {(showBackButton || leftIcon) ? (
+        <TouchableOpacity
+          style={styles.leftButton}
+          onPress={handleLeftButtonPress}
+          disabled={!showBackButton && !onLeftPress && !leftIcon}
+        >
+          {showBackButton ? (
+            <Ionicons name="arrow-back" size={24} color={leftIconColor} />
+          ) : leftIcon ? (
+            <Ionicons name={leftIcon} size={24} color={leftIconColor} />
+          ) : null}
+        </TouchableOpacity>
+      ) : (
+        <View style={{ width: hp("5%") }} />
+      )}
 
       {/* Orta kısım - Başlık */}
       <View style={styles.titleContainer}>
