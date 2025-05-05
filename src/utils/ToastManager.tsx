@@ -10,20 +10,20 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-// Toast tipleri
+
 export type ToastType = "success" | "error" | "info" | "warning";
 
-// Toast pozisyonu
+
 export type ToastPosition = "top" | "bottom";
 
-// Toast buton özellikleri
+
 export interface ToastButton {
   text: string;
   onPress: () => void;
   style?: "primary" | "secondary";
 }
 
-// Toast mesajı özellikleri
+
 interface ToastOptions {
   message: string;
   duration?: number;
@@ -35,15 +35,15 @@ interface ToastOptions {
   onHide?: () => void;
 }
 
-// Aktif toast mesajı
+
 interface ToastItem extends ToastOptions {
   id: number;
   startTime: number;
   remainingDuration: number;
-  height?: number; // Toast'ın yüksekliği için yeni alan eklendi
+  height?: number; 
 }
 
-// Singleton Toast Manager sınıfı
+
 class ToastManagerClass {
   private static instance: ToastManagerClass;
   private toasts: ToastItem[] = [];
@@ -51,7 +51,7 @@ class ToastManagerClass {
   private lastId = 0;
   private timeoutRefs: Record<number, NodeJS.Timeout> = {};
 
-  // Singleton constructor
+  
   static getInstance() {
     if (!this.instance) {
       this.instance = new ToastManagerClass();
@@ -59,7 +59,7 @@ class ToastManagerClass {
     return this.instance;
   }
 
-  // Toast gösterme
+  
   show(options: ToastOptions): number {
     const id = ++this.lastId;
     const defaultDuration = options.buttons?.length ? 60000 : 3000;
@@ -81,7 +81,7 @@ class ToastManagerClass {
     this.toasts = [...this.toasts, newToast];
     this.notifyListeners();
 
-    // Otomatik kapanma için zamanlayıcı ayarla (buton yoksa)
+    
     if (!options.buttons?.length) {
       this.setHideTimeout(id, newToast.duration);
     }
@@ -89,7 +89,7 @@ class ToastManagerClass {
     return id;
   }
 
-  // Toast gizleme
+  
   hide(id: number) {
     const toastToHide = this.toasts.find((toast) => toast.id === id);
     if (toastToHide?.onHide) {
@@ -99,16 +99,16 @@ class ToastManagerClass {
     this.toasts = this.toasts.filter((toast) => toast.id !== id);
     this.notifyListeners();
 
-    // Zamanlayıcıyı temizle
+    
     if (this.timeoutRefs[id]) {
       clearTimeout(this.timeoutRefs[id]);
       delete this.timeoutRefs[id];
     }
   }
 
-  // Tüm toastları gizleme
+  
   hideAll() {
-    // Tüm zamanlayıcıları temizle
+    
     Object.keys(this.timeoutRefs).forEach((id) => {
       clearTimeout(this.timeoutRefs[Number(id)]);
       delete this.timeoutRefs[Number(id)];
@@ -122,55 +122,55 @@ class ToastManagerClass {
     this.notifyListeners();
   }
 
-  // Toast durumunu izleme
+  
   subscribe(callback: (toasts: ToastItem[]) => void) {
     this.listeners.add(callback);
-    callback(this.toasts); // İlk durum bildirilir
+    callback(this.toasts); 
 
     return () => {
       this.listeners.delete(callback);
     };
   }
 
-  // Dinleyicilere bildirim gönderme
+  
   private notifyListeners() {
     this.listeners.forEach((listener) => listener(this.toasts));
   }
 
-  // Gizleme zamanlayıcısı ayarlama
+  
   private setHideTimeout(id: number, duration: number) {
     this.timeoutRefs[id] = setTimeout(() => {
       this.hide(id);
     }, duration);
   }
 
-  // Toast'un kalan süresini duraklatma
+  
   pauseToast(id: number) {
     const toast = this.toasts.find((t) => t.id === id);
-    if (!toast || toast.buttons?.length) return; // Butonlu toastlar duraklatılmaz
+    if (!toast || toast.buttons?.length) return; 
 
     const elapsedTime = Date.now() - toast.startTime;
     toast.remainingDuration = Math.max(0, toast.duration - elapsedTime);
 
-    // Zamanlayıcıyı temizle
+    
     if (this.timeoutRefs[id]) {
       clearTimeout(this.timeoutRefs[id]);
       delete this.timeoutRefs[id];
     }
   }
 
-  // Toast'un kalan süresini devam ettirme
+  
   resumeToast(id: number) {
     const toast = this.toasts.find((t) => t.id === id);
-    if (!toast || toast.buttons?.length) return; // Butonlu toastlar devam ettirilmez
+    if (!toast || toast.buttons?.length) return; 
 
     toast.startTime = Date.now();
 
-    // Yeni zamanlayıcı ayarla
+    
     this.setHideTimeout(id, toast.remainingDuration);
   }
 
-  // Toast yüksekliğini kaydet
+  
   updateToastHeight(id: number, height: number) {
     const toastIndex = this.toasts.findIndex((t) => t.id === id);
     if (toastIndex !== -1) {
@@ -180,29 +180,29 @@ class ToastManagerClass {
   }
 }
 
-// Toast Manager singleton'ını dışa aktar
+
 export const ToastManager = ToastManagerClass.getInstance();
 
-// Toast Container bileşeni
+
 export const ToastContainer: React.FC = () => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const { width } = Dimensions.get("window");
 
-  // Toast pozisyonları için güvenli alan hesaplama
+  
   const safeTopMargin = Platform.OS === "ios" ? 50 : 20;
   const safeBottomMargin = Platform.OS === "ios" ? 34 : 10;
 
-  // Toast yüksekliklerini ölçmek için ref
+  
   const toastRefs = useRef<{ [id: number]: View | null }>({});
 
-  // Toast durumunu izleme
+  
   useEffect(() => {
     return ToastManager.subscribe((updatedToasts) => {
       setToasts(updatedToasts);
     });
   }, []);
 
-  // Tip ve ikon renkleri
+  
   const getIconColor = (type: ToastType, customColor?: string) => {
     if (customColor) return customColor;
 
@@ -219,7 +219,7 @@ export const ToastContainer: React.FC = () => {
     }
   };
 
-  // İkon seçimi
+  
   const getIcon = (
     type: ToastType,
     customIcon?: keyof typeof Ionicons.glyphMap
@@ -239,15 +239,15 @@ export const ToastContainer: React.FC = () => {
     }
   };
 
-  // Her toast için animasyon değeri tutma
+  
   const animatedValues = useRef<{ [id: number]: Animated.Value }>({});
 
-  // Animasyon değerini al veya oluştur
+  
   const getAnimatedValue = (id: number) => {
     if (!animatedValues.current[id]) {
       animatedValues.current[id] = new Animated.Value(0);
 
-      // Giriş animasyonu
+      
       Animated.timing(animatedValues.current[id], {
         toValue: 1,
         duration: 300,
@@ -257,12 +257,12 @@ export const ToastContainer: React.FC = () => {
     return animatedValues.current[id];
   };
 
-  // Toast'u kapat
+  
   const handleCloseToast = (id: number) => {
     const animValue = animatedValues.current[id];
 
     if (animValue) {
-      // Çıkış animasyonu
+      
       Animated.timing(animValue, {
         toValue: 0,
         duration: 200,
@@ -276,23 +276,23 @@ export const ToastContainer: React.FC = () => {
     }
   };
 
-  // Buton tıklama işleyicisi
+  
   const handleButtonPress = (toast: ToastItem, buttonPress: () => void) => {
     buttonPress();
     handleCloseToast(toast.id);
   };
 
-  // Toast ölçümü tamamlandığında yüksekliği kaydet
+  
   const handleToastLayout = (id: number, event: any) => {
     const { height } = event.nativeEvent.layout;
     ToastManager.updateToastHeight(id, height);
   };
 
-  // Toastları pozisyonlarına göre gruplandır
+  
   const topToasts = toasts.filter((toast) => toast.position === "top");
   const bottomToasts = toasts.filter((toast) => toast.position === "bottom");
 
-  // Toast'un konumunu hesapla
+  
   const calculateToastPosition = (
     toast: ToastItem,
     index: number,
@@ -301,10 +301,10 @@ export const ToastContainer: React.FC = () => {
     const positionToasts = position === "top" ? topToasts : bottomToasts;
     let offset = position === "top" ? safeTopMargin : safeBottomMargin;
 
-    // Önceki toast'ların yükseklikleri ve aralarındaki boşlukları hesapla
+    
     for (let i = 0; i < index; i++) {
       const prevToast = positionToasts[i];
-      offset += (prevToast.height || 60) + 10; // 10px boşluk
+      offset += (prevToast.height || 60) + 10; 
     }
 
     return offset;
@@ -317,7 +317,7 @@ export const ToastContainer: React.FC = () => {
         const animValue = getAnimatedValue(toast.id);
         const position = calculateToastPosition(toast, index, "top");
 
-        // Pozisyona göre animasyon stili
+        
         const containerStyle = [
           styles.toastContainer,
           { width: width - 20 },
@@ -406,7 +406,7 @@ export const ToastContainer: React.FC = () => {
         const animValue = getAnimatedValue(toast.id);
         const position = calculateToastPosition(toast, index, "bottom");
 
-        // Pozisyona göre animasyon stili
+        
         const containerStyle = [
           styles.toastContainer,
           { width: width - 20 },
@@ -493,7 +493,7 @@ export const ToastContainer: React.FC = () => {
   );
 };
 
-// Stiller
+
 const styles = StyleSheet.create({
   toastContainer: {
     position: "absolute",

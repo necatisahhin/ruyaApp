@@ -4,8 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { View, ActivityIndicator } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  CommonActions,
+  useNavigation,
+  useNavigationState,
+} from "@react-navigation/native";
 
-// Örnek ekranlar (siz kendi ekranlarınızı oluşturacaksınız)
+
 import HomeScreen from "../screens/Ruyalar/RuyaList";
 import ProfileScreen from "../screens/Profile/ProfileScreen";
 import RuyaBak from "../screens/RuyaBak/RuyaBakScreen";
@@ -15,23 +20,18 @@ import RegisterScreen from "../screens/Auth/RegisterScreen";
 import CustomTabBar from "../components/CustomTabBar/CustomTabBar";
 import CustomHeader from "../components/CustomHeader/CustomHeader";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
-import {
-  CommonActions,
-  useNavigation,
-  useNavigationState,
-} from "@react-navigation/native";
 
-// Rüya yorumlama için parametre tipi
+
 export type RuyaYorumParams = {
   baslik: string;
   icerik: string;
   kategori: string;
   yorum: string;
   tarih: Date;
-  fromSavedDream?: boolean; // Kayıtlı rüyadan geliyorsa true olacak yeni parametre
+  fromSavedDream?: boolean; 
 };
 
-// Tab navigator tipini tanımlayalım
+
 export type RootTabParamList = {
   RuyaList:
     | undefined
@@ -45,7 +45,7 @@ export type RootTabParamList = {
   Profil: undefined;
 };
 
-// Stack navigator tipini tanımlayalım
+
 export type RootStackParamList = {
   Auth: undefined;
   Login: {
@@ -65,7 +65,7 @@ export type RootStackParamList = {
   RuyaYorumSonuc: RuyaYorumParams;
 };
 
-// Auth Stack navigator tipini tanımlayalım
+
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -75,7 +75,7 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 const AuthStack = createStackNavigator<AuthStackParamList>();
 
-// Auth Navigator bileşeni
+
 const AuthNavigator = () => {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
@@ -85,22 +85,22 @@ const AuthNavigator = () => {
   );
 };
 
-// Tab Navigator bileşeni
+
 const TabNavigator = () => {
-  // Aktif ekran başlığını ve ekran adını takip etmek için state ekliyoruz
+  
   const [activeScreenTitle, setActiveScreenTitle] =
     useState<string>("Rüyalarım");
   const [activeRouteName, setActiveRouteName] = useState<string>("RuyaList");
   const navigation = useNavigation();
 
-  // Ekran başlıklarını tanımlıyoruz
+  
   const screenTitles: { [key: string]: string } = {
     RuyaList: "Rüyalarım",
     RuyaBak: "Rüya Bak",
     Profil: "Profil",
   };
 
-  // Tab değiştiğinde başlığı ve aktif ekranı güncelliyoruz
+  
   const handleTabChange = (state: any) => {
     if (state.routes && state.routes.length > 0) {
       const routeName = state.routes[state.index].name;
@@ -109,33 +109,45 @@ const TabNavigator = () => {
     }
   };
 
-  // Ekrana göre header özelliklerini belirliyoruz
+  
   const getHeaderProps = () => {
-    // Varsayılan özellikler
+    
     const defaultProps = {
       title: activeScreenTitle,
       rightIcon: "notifications-outline" as keyof typeof Ionicons.glyphMap,
       onRightPress: () => console.log("Bildirimler açıldı"),
     };
 
-    // Ekrana özel özellikler
+    
     switch (activeRouteName) {
       case "RuyaList":
         return {
           ...defaultProps,
           leftIcon: "search" as keyof typeof Ionicons.glyphMap,
           onLeftPress: () => {
+            
+            
             navigation.dispatch(
-              CommonActions.setParams({
-                toggleSearch: true,
+              CommonActions.navigate({
+                name: "TabNavigator",
+                params: {
+                  screen: "RuyaList",
+                  params: { toggleSearch: true },
+                },
               })
             );
           },
           rightIcon2: "filter" as keyof typeof Ionicons.glyphMap,
           onRightPress2: () => {
+            
+            
             navigation.dispatch(
-              CommonActions.setParams({
-                toggleFilter: true,
+              CommonActions.navigate({
+                name: "TabNavigator",
+                params: {
+                  screen: "RuyaList",
+                  params: { toggleFilter: true },
+                },
               })
             );
           },
@@ -147,8 +159,8 @@ const TabNavigator = () => {
       case "Profil":
         return {
           ...defaultProps,
-          rightIcon: "settings-outline" as keyof typeof Ionicons.glyphMap,
-          onRightPress: () => console.log("Ayarlar açıldı"),
+          rightIcon: "notifications-outline" as keyof typeof Ionicons.glyphMap,
+          onRightPress: () => console.log("Bildirimler açıldı"),
         };
       default:
         return defaultProps;
@@ -178,7 +190,7 @@ const TabNavigator = () => {
   );
 };
 
-// Ana navigator bileşeni
+
 const RootNavigator = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -190,7 +202,7 @@ const RootNavigator = () => {
 
   const checkAuthStatus = async () => {
     try {
-      // Basit bir kimlik doğrulama kontrolü
+      
       const userToken = await AsyncStorage.getItem('userToken');
       setIsAuthenticated(!!userToken);
     } catch (error) {

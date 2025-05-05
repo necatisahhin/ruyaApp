@@ -8,6 +8,9 @@ import {
   SafeAreaView,
   Platform,
   ActivityIndicator,
+  TextInput,
+  Modal,
+  Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,14 +22,19 @@ import {
 import styles from "./ProfileScreenStyles";
 import { ToastManager } from "../../utils/ToastManager";
 import { useNavigation } from "@react-navigation/native";
-import { logout, getUserProfile } from "../../services/authService";
+import { logout, getUserProfile, updateUserProfile } from "../../services/authService";
 
 const ProfileScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   
-  // State tanımlamaları
+  
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentField, setCurrentField] = useState('');
+  const [editValue, setEditValue] = useState('');
+  const [updateLoading, setUpdateLoading] = useState(false);
+  
   const [profileInfo, setProfileInfo] = useState({
     firstName: "",
     lastName: "",
@@ -38,7 +46,7 @@ const ProfileScreen = () => {
     profileImage: null,
   });
   
-  // Profil bilgilerini yükle
+  
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -75,13 +83,13 @@ const ProfileScreen = () => {
     fetchUserProfile();
   }, []);
 
-  // Çıkış yap butonu için işleyici
+  
   const handleLogout = async () => {
     try {
-      // authService'den logout fonksiyonunu çağır
+      
       await logout();
       
-      // Çıkış işlemini bildir
+      
       ToastManager.show({
         message: "Başarıyla çıkış yapıldı!",
         type: "success",
@@ -91,7 +99,7 @@ const ProfileScreen = () => {
         iconColor: "#4CAF50",
       });
       
-      // Kullanıcıyı giriş ekranına yönlendir
+      
       navigation.reset({
         index: 0,
         routes: [{ name: 'Auth' as never }],
@@ -99,7 +107,7 @@ const ProfileScreen = () => {
     } catch (error) {
       console.error("Çıkış yapılırken hata oluştu:", error);
       
-      // Hata durumunda kullanıcıya bildir
+      
       ToastManager.show({
         message: "Çıkış yapılırken bir hata oluştu!",
         type: "error",
@@ -111,29 +119,242 @@ const ProfileScreen = () => {
     }
   };
 
-  // Düzenleme işlevi için handler fonksiyonu
+  
   const handleEdit = (field: string) => {
-    // Düzenleme işlemini bildir
-    ToastManager.show({
-      message: `${field} bilgisini düzenliyorsunuz`,
-      type: "info",
-      position: "top",
-      duration: 2000,
-      icon: "create-outline",
-      iconColor: "#3498db",
-    });
-
-    // Gerçek bir uygulamada burada düzenleme modalı açılır
+    let initialValue = "";
+    
+    switch(field) {
+      case "Ad":
+        initialValue = profileInfo.firstName;
+        break;
+      case "Soyad":
+        initialValue = profileInfo.lastName;
+        break;
+      case "Yaş":
+        initialValue = profileInfo.age.toString();
+        break;
+      case "Cinsiyet":
+        initialValue = profileInfo.gender === "Erkek" ? "male" : 
+                      profileInfo.gender === "Kadın" ? "female" : "other";
+        break;
+      case "Medeni Hal":
+        initialValue = profileInfo.maritalStatus === "Bekar" ? "single" : 
+                      profileInfo.maritalStatus === "Evli" ? "married" :
+                      profileInfo.maritalStatus === "Boşanmış" ? "divorced" : "widowed";
+        break;
+      default:
+        ToastManager.show({
+          message: "Bu alan düzenlenemez!",
+          type: "error",
+          position: "top",
+          duration: 3000,
+          icon: "alert-circle-outline",
+          iconColor: "#FF5252",
+        });
+        return;
+    }
+    
+    setCurrentField(field);
+    setEditValue(initialValue);
+    setModalVisible(true);
+  };
+  
+  const handleUpdate = async () => {
+    try {
+      setUpdateLoading(true);
+      
+      const updateData: any = {};
+      
+      switch(currentField) {
+        case "Ad":
+          updateData.firstName = editValue;
+          break;
+        case "Soyad":
+          updateData.lastName = editValue;
+          break;
+        case "Yaş":
+          updateData.age = parseInt(editValue);
+          break;
+        case "Cinsiyet":
+          updateData.gender = editValue;
+          break;
+        case "Medeni Hal":
+          updateData.maritalStatus = editValue;
+          break;
+        default:
+          return;
+      }
+      
+      const response = await updateUserProfile(updateData);
+      
+      ToastManager.show({
+        message: "Profiliniz başarıyla güncellendi!",
+        type: "success",
+        position: "top",
+        duration: 3000,
+        icon: "checkmark-circle-outline",
+        iconColor: "#4CAF50",
+      });
+      
+      if (response.data) {
+        setProfileInfo(prevState => ({
+          ...prevState,
+          firstName: response.data.firstName || prevState.firstName,
+          lastName: response.data.lastName || prevState.lastName,
+          age: response.data.age || prevState.age,
+          gender: response.data.gender === 'male' ? 'Erkek' : 
+                  response.data.gender === 'female' ? 'Kadın' : 'Diğer',
+          maritalStatus: response.data.maritalStatus === 'single' ? 'Bekar' : 
+                         response.data.maritalStatus === 'married' ? 'Evli' : 
+                         response.data.maritalStatus === 'divorced' ? 'Boşanmış' : 'Dul',
+          profileImage: response.data.profileImage || prevState.profileImage,
+        }));
+      }
+      
+      setModalVisible(false);
+    } catch (error) {
+      console.error("Profil güncellenirken hata:", error);
+      ToastManager.show({
+        message: "Profil güncellenemedi!",
+        type: "error",
+        position: "top",
+        duration: 3000,
+        icon: "alert-circle-outline",
+        iconColor: "#FF5252",
+      });
+    } finally {
+      setUpdateLoading(false);
+    }
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#1A1A40' }}>
       <LinearGradient
         colors={["#1A1A40", "#2C2C6C", "#4B0082"]}
-        style={styles.backgroundImage}
+        style={[styles.backgroundImage, { height: '110%' }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
+        {/* Profil Düzenleme Modalı */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>{currentField} Düzenle</Text>
+              
+              {currentField === "Cinsiyet" ? (
+                <View style={styles.pickerContainer}>
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      editValue === "male" && styles.selectedOption
+                    ]}
+                    onPress={() => setEditValue("male")}
+                  >
+                    <Text style={styles.optionText}>Erkek</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      editValue === "female" && styles.selectedOption
+                    ]}
+                    onPress={() => setEditValue("female")}
+                  >
+                    <Text style={styles.optionText}>Kadın</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      editValue === "other" && styles.selectedOption
+                    ]}
+                    onPress={() => setEditValue("other")}
+                  >
+                    <Text style={styles.optionText}>Diğer</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : currentField === "Medeni Hal" ? (
+                <View style={styles.pickerContainer}>
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      editValue === "single" && styles.selectedOption
+                    ]}
+                    onPress={() => setEditValue("single")}
+                  >
+                    <Text style={styles.optionText}>Bekar</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      editValue === "married" && styles.selectedOption
+                    ]}
+                    onPress={() => setEditValue("married")}
+                  >
+                    <Text style={styles.optionText}>Evli</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      editValue === "divorced" && styles.selectedOption
+                    ]}
+                    onPress={() => setEditValue("divorced")}
+                  >
+                    <Text style={styles.optionText}>Boşanmış</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[
+                      styles.optionButton,
+                      editValue === "widowed" && styles.selectedOption
+                    ]}
+                    onPress={() => setEditValue("widowed")}
+                  >
+                    <Text style={styles.optionText}>Dul</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TextInput
+                  style={styles.input}
+                  value={editValue}
+                  onChangeText={setEditValue}
+                  placeholder={`${currentField} giriniz`}
+                  placeholderTextColor="#999"
+                  keyboardType={currentField === "Yaş" ? "numeric" : "default"}
+                />
+              )}
+              
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity 
+                  style={styles.cancelButton} 
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.buttonText}>İptal</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.saveButton}
+                  onPress={handleUpdate}
+                  disabled={updateLoading}
+                >
+                  {updateLoading ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Kaydet</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         {loading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FFFFFF" />
@@ -144,7 +365,7 @@ const ProfileScreen = () => {
             style={{ flex: 1 }}
             contentContainerStyle={{
               flexGrow: 1,
-              paddingBottom: hp("10%"),
+              paddingBottom: hp("20%"),
               paddingTop: insets.top + hp("5%"),
             }}
             showsVerticalScrollIndicator={false}
@@ -187,6 +408,38 @@ const ProfileScreen = () => {
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
+                  {/* Ad */}
+                  <View style={styles.statusRow}>
+                    <Text style={styles.statusLabel}>Ad</Text>
+                    <View style={styles.editableContainer}>
+                      <Text style={styles.statusValue}>{profileInfo.firstName}</Text>
+                      <TouchableOpacity onPress={() => handleEdit("Ad")}>
+                        <Ionicons
+                          name="create-outline"
+                          size={18}
+                          color="#FFD700"
+                          style={styles.editIcon}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Soyad */}
+                  <View style={styles.statusRow}>
+                    <Text style={styles.statusLabel}>Soyad</Text>
+                    <View style={styles.editableContainer}>
+                      <Text style={styles.statusValue}>{profileInfo.lastName}</Text>
+                      <TouchableOpacity onPress={() => handleEdit("Soyad")}>
+                        <Ionicons
+                          name="create-outline"
+                          size={18}
+                          color="#FFD700"
+                          style={styles.editIcon}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
                   {/* Yaş */}
                   <View style={styles.statusRow}>
                     <Text style={styles.statusLabel}>Yaş</Text>
@@ -240,14 +493,6 @@ const ProfileScreen = () => {
                     <Text style={styles.statusLabel}>E-posta</Text>
                     <View style={styles.editableContainer}>
                       <Text style={styles.statusValue}>{profileInfo.email}</Text>
-                      <TouchableOpacity onPress={() => handleEdit("E-posta")}>
-                        <Ionicons
-                          name="create-outline"
-                          size={18}
-                          color="#FFD700"
-                          style={styles.editIcon}
-                        />
-                      </TouchableOpacity>
                     </View>
                   </View>
 
@@ -258,18 +503,11 @@ const ProfileScreen = () => {
                       <Text style={styles.statusValue}>
                         {profileInfo.phone}
                       </Text>
-                      <TouchableOpacity
-                        onPress={() => handleEdit("Telefon numarası")}
-                      >
-                        <Ionicons
-                          name="create-outline"
-                          size={18}
-                          color="#FFD700"
-                          style={styles.editIcon}
-                        />
-                      </TouchableOpacity>
                     </View>
                   </View>
+
+                  {/* Şifre Değiştir */}
+                  
                 </LinearGradient>
               </View>
 

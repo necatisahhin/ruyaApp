@@ -7,21 +7,21 @@ import { LinearGradient } from "expo-linear-gradient";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import styles from "./CustomTabBarStyles";
 
-// Basit animasyonlu TabBar bileşeni
+
 const CustomTabBar: React.FC<BottomTabBarProps> = ({
   state,
   descriptors,
   navigation,
 }) => {
-  // SafeAreaInsets hook'u ile cihazın güvenli alanlarını alıyoruz
+  
   const insets = useSafeAreaInsets();
   
-  // Her tab için basit animasyon değerleri
+  
   const [scaleValues] = useState(() => 
     state.routes.map(() => new Animated.Value(1))
   );
 
-  // Tab ikonlarını belirle
+  
   const getTabIcon = (
     routeName: string,
     isFocused: boolean
@@ -29,16 +29,16 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
     if (routeName === "RuyaList") {
       return isFocused ? "list" : "list-outline";
     } else if (routeName === "RuyaBak") {
-      return "sparkles"; // Hep sabit bir ikon
+      return "sparkles"; 
     } else if (routeName === "Profil") {
       return isFocused ? "person" : "person-outline";
     }
-    return "home"; // Varsayılan ikon
+    return "home"; 
   };
 
-  // Tab'a tıklanınca basit animasyon yap ve navigasyon yap
+  
   const handleTabPress = (index: number, routeName: string) => {
-    // Çok basit bir ölçek animasyonu
+    
     Animated.sequence([
       Animated.timing(scaleValues[index], {
         toValue: 0.9,
@@ -52,7 +52,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
       }),
     ]).start();
 
-    // Navigasyonu yap
+    
     navigation.navigate(routeName);
   };
 
@@ -60,9 +60,9 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
     <View
       style={[
         styles.container,
-        // Bottom inset değeri 0'dan büyük ise (çentikli ekranlarda) minimal bir boşluk ekleyelim
+        
         insets.bottom > 0
-          ? { marginBottom: insets.bottom - 6 } // 6 değerini çıkartıyoruz çünkü container'da zaten bottom: 6 var
+          ? { marginBottom: insets.bottom - 6 } 
           : null,
       ]}
     >
@@ -86,7 +86,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({
         const iconName = getTabIcon(route.name, isFocused);
         const isMiddleTab = index === 1;
 
-        // Orta tab için farklı stil ve davranış
+        
         return (
           <TouchableOpacity
             key={route.key}

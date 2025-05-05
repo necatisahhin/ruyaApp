@@ -39,7 +39,7 @@ Bu doküman kapsamında yapılacak tüm iletişim, kod yorumları ve açıklamal
 
 - **Inline Comments:** Use comments to document logic changes.
   ```typescript
-  // This function ensures valid input before processing
+  
   ```
 - **Change Explanation:** Briefly explain any additions or updates made to the code.
 
@@ -57,7 +57,7 @@ function add(a: number, b: number): number {
 
 ```typescript
 function add(a: number, b: number): number {
-  // Ensure both inputs are valid numbers
+  
   return a + b;
 }
 ```

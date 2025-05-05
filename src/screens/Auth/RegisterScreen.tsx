@@ -38,39 +38,39 @@ const RegisterScreen = () => {
   const navigation = useNavigation();
 
   const handleRegister = async () => {
-    // Form doğrulama
+    
     if (!firstName || !lastName || !email || !phone || !password || !confirmPassword || !age || !gender || !maritalStatus) {
       Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
       return;
     }
 
-    // Email formatı doğrulama
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Hata', 'Lütfen geçerli bir e-posta adresi girin.');
       return;
     }
 
-    // Telefon formatı doğrulama
+    
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone)) {
       Alert.alert('Hata', 'Lütfen geçerli bir telefon numarası girin (10 haneli).');
       return;
     }
 
-    // Şifre uzunluğu doğrulama
+    
     if (password.length < 6) {
       Alert.alert('Hata', 'Şifre en az 6 karakter olmalıdır.');
       return;
     }
 
-    // Şifre eşleşme doğrulama
+    
     if (password !== confirmPassword) {
       Alert.alert('Hata', 'Şifreler eşleşmiyor.');
       return;
     }
 
-    // Yaş doğrulama
+    
     const ageNumber = parseInt(age, 10);
     if (isNaN(ageNumber) || ageNumber < 18 || ageNumber > 120) {
       Alert.alert('Hata', 'Lütfen geçerli bir yaş girin (18-120 arası).');
@@ -80,7 +80,7 @@ const RegisterScreen = () => {
     setIsLoading(true);
     
     try {
-      // API'ye kayıt isteği gönder
+      
       const userData = {
         firstName,
         lastName,
@@ -95,7 +95,7 @@ const RegisterScreen = () => {
       
       await register(userData);
       
-      // Başarılı kayıt mesajı
+      
       Alert.alert(
         'Başarılı',
         'Kaydınız başarıyla tamamlandı!',
@@ -103,7 +103,7 @@ const RegisterScreen = () => {
           {
             text: 'Tamam',
             onPress: () => {
-              // Ana ekrana yönlendir
+              
               navigation.reset({
                 index: 0,
                 routes: [{ name: 'TabNavigator' as never }],
@@ -121,7 +121,7 @@ const RegisterScreen = () => {
   };
 
   const navigateToLogin = () => {
-    // @ts-ignore - Navigasyon tiplerini daha sonra düzenleyeceğiz
+    
     navigation.navigate('Login');
   };
 

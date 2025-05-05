@@ -10,19 +10,19 @@ const styles = StyleSheet.create({
     width: wp("95%"),
     marginVertical: hp("2%"),
     borderRadius: 16,
-    backgroundColor: "transparent", // Arka plan şeffaf olacak gradient için
+    backgroundColor: "transparent", 
     shadowColor: "#8D5E8E",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 10,
-    overflow: "hidden", // Menü kart içinde olacağından overflow hidden olmalı
+    overflow: "hidden", 
   },
   cardContent: {
     width: "100%",
     borderRadius: 16,
-    backgroundColor: "transparent", // Gradient kullanacağımız için şeffaf yapıyoruz
-    overflow: "hidden", // İçerideki gradientler için
+    backgroundColor: "transparent", 
+    overflow: "hidden", 
   },
   cardBackground: {
     width: "100%",
@@ -34,32 +34,32 @@ const styles = StyleSheet.create({
     padding: wp("4%"),
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    backgroundColor: "transparent", // Şeffaf olacak gradient görünsün diye
+    backgroundColor: "transparent", 
   },
   headerContainer: {
     marginBottom: hp("0.5%"),
     justifyContent: "space-between",
     flexDirection: "row",
-    zIndex: 2, // İçerik öne çıksın
+    zIndex: 2, 
   },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
-    zIndex: 2, // İçerik öne çıksın
+    zIndex: 2, 
   },
   title: {
     fontSize: 20,
     fontWeight: "500",
-    color: "#FFFFFF", // Beyaz metin
+    color: "#FFFFFF", 
     marginRight: wp("2%"),
-    textShadowColor: "rgba(0, 0, 0, 0.5)", // Metin gölgesi
+    textShadowColor: "rgba(0, 0, 0, 0.5)", 
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
   },
   category: {
     fontSize: 14,
-    color: "#FFD700", // Altın rengi vurgu
+    color: "#FFD700", 
     backgroundColor: "rgba(255, 215, 0, 0.15)",
     paddingHorizontal: wp("2%"),
     paddingVertical: hp("0.5%"),
@@ -85,20 +85,20 @@ const styles = StyleSheet.create({
     elevation: 4,
     zIndex: 5,
   },
-  // Yıldız ve parlama efektleri ile ilgili stiller kaldırıldı
+  
   descriptionContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.15)", // Şeffaf arka plan
+    backgroundColor: "rgba(255, 255, 255, 0.15)", 
     padding: wp("3%"),
     borderRadius: 12,
     marginVertical: hp("1%"),
-    zIndex: 2, // İçerik öne çıksın
+    zIndex: 2, 
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.2)",
   },
   description: {
     fontSize: 16,
     fontWeight: "300",
-    color: "#FFFFFF", // Beyaz metin
+    color: "#FFFFFF", 
     lineHeight: 22,
     textShadowColor: "rgba(0, 0, 0, 0.3)",
     textShadowOffset: { width: 0.5, height: 0.5 },
@@ -109,18 +109,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     marginTop: hp("1%"),
-    zIndex: 2, // İçerik öne çıksın
+    zIndex: 2, 
   },
   date: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)", // Beyaz ama şeffaf
+    color: "rgba(255, 255, 255, 0.8)", 
     fontStyle: "italic",
     textShadowColor: "rgba(0, 0, 0, 0.3)",
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 1,
   },
 
-  // Yorum göstergesi için yeni stil
+  
   interpretationIndicator: {
     marginLeft: wp("2%"),
     backgroundColor: "rgba(255, 215, 0, 0.15)",
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     padding: wp("1%"),
   },
 
-  // Yorum alanı için stiller
+  
   interpretationContainer: {
     width: "100%",
     overflow: "hidden",
@@ -186,13 +186,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  // Yeni entegre menü tasarım stilleri
+  
   menuContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.05)", // Daha şeffaf arka plan
+    backgroundColor: "rgba(255, 255, 255, 0.05)", 
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
     overflow: "hidden",
-    backdropFilter: "blur(5px)", // Arka planı bulanıklaştırma
+    backdropFilter: "blur(5px)", 
   },
   menuGradient: {
     position: "absolute",
@@ -210,20 +210,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: hp("1%"),
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.1)", // Şeffaf beyaz çizgi
-    backgroundColor: "rgba(255, 255, 255, 0.07)", // Hafif şeffaf beyaz
+    borderBottomColor: "rgba(255, 255, 255, 0.1)", 
+    backgroundColor: "rgba(255, 255, 255, 0.07)", 
   },
   menuHeaderLine: {
     width: wp("12%"),
     height: 5,
-    backgroundColor: "rgba(255, 255, 255, 0.3)", // Şeffaf beyaz çizgi
+    backgroundColor: "rgba(255, 255, 255, 0.3)", 
     borderRadius: 5,
     marginBottom: 5,
   },
   menuTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#FFFFFF", // Beyaz metin
+    color: "#FFFFFF", 
     textShadowColor: "rgba(0, 0, 0, 0.3)",
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 2,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: hp("2%"),
     paddingHorizontal: wp("4%"),
-    backgroundColor: "rgba(255, 255, 255, 0.03)", // Çok hafif şeffaf beyaz
+    backgroundColor: "rgba(255, 255, 255, 0.03)", 
   },
   menuItemContainer: {
     alignItems: "center",
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   menuItemText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#FFFFFF", // Beyaz metin
+    color: "#FFFFFF", 
     marginTop: 4,
     textShadowColor: "rgba(0, 0, 0, 0.3)",
     textShadowOffset: { width: 0.5, height: 0.5 },

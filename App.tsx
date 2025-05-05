@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import RootNavigator from "./src/navigation/RootNavigator";
-import { ToastContainer } from "./src/utils/ToastManager"; // Yeni ToastManager sistemini kullanıyoruz
+import { ToastContainer } from "./src/utils/ToastManager"; 
 
 export default function App() {
   return (

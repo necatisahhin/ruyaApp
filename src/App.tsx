@@ -7,7 +7,7 @@ import { ToastProvider } from "./contexts/ToastContext";
 import Toast from "./components/Toast/Toast";
 import * as SplashScreen from "expo-splash-screen";
 
-// Splash screen'i biraz daha uzun göstermek için
+
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* Splash screen yüklenmezse hata yakalama */
 });
@@ -16,20 +16,20 @@ const App: React.FC = () => {
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    // Uygulama hazırlık işlemleri (örn. font yükleme, API çağrıları vb.)
+    
     async function prepare() {
       try {
-        // Burada uygulamanın başlangıcında yapılması gereken işlemler yapılabilir
-        // Örnek: await Font.loadAsync({});
+        
+        
 
-        // Hazırlık işlemi bittiğinde 2 saniye bekleyelim (opsiyonel)
+        
         await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn("Uygulama başlatma hatası:", e);
       } finally {
-        // Uygulama hazır olarak işaretlenir
+        
         setAppIsReady(true);
-        // Splash screen'i gizleyelim
+        
         await SplashScreen.hideAsync();
       }
     }
@@ -38,7 +38,7 @@ const App: React.FC = () => {
   }, []);
 
   if (!appIsReady) {
-    // Uygulama hazır değilse boş bir ekran göster
+    
     return null;
   }
 

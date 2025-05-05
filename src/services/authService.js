@@ -1,11 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// API URL'si - geliştirme ortamında localhost yerine IP adresinizi kullanın
-const API_URL = 'http://10.0.2.2:5000/api/auth'; // Android Emulator için
-// const API_URL = 'http://localhost:5000/api/auth'; // iOS Simulator için
 
-// Axios instance oluştur
+const API_URL = 'http://localhost:5001/api/auth';
+
+
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -13,7 +13,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor - her istekte token ekle
+
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('userToken');
@@ -27,7 +27,7 @@ api.interceptors.request.use(
   }
 );
 
-// Kullanıcı kaydı
+
 export const register = async (userData) => {
   try {
     const response = await api.post('/register', userData);
@@ -43,7 +43,7 @@ export const register = async (userData) => {
   }
 };
 
-// Kullanıcı girişi
+
 export const login = async (email, password) => {
   try {
     const response = await api.post('/login', { email, password });
@@ -59,13 +59,13 @@ export const login = async (email, password) => {
   }
 };
 
-// Kullanıcı çıkışı
+
 export const logout = async () => {
   await AsyncStorage.removeItem('userToken');
   await AsyncStorage.removeItem('userData');
 };
 
-// Kullanıcı profili
+
 export const getUserProfile = async () => {
   try {
     const response = await api.get('/profile');
@@ -75,7 +75,28 @@ export const getUserProfile = async () => {
   }
 };
 
-// Oturum durumunu kontrol et
+
+export const updateUserProfile = async (userData) => {
+  try {
+    const response = await api.put('/profile/update', userData);
+    
+    // Profil güncellendiğinde userData'yı da güncelle
+    if (response.data.success) {
+      const currentUserData = await AsyncStorage.getItem('userData');
+      if (currentUserData) {
+        const parsedUserData = JSON.parse(currentUserData);
+        const updatedUserData = { ...parsedUserData, ...response.data.data };
+        await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
+      }
+    }
+    
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Sunucu hatası' };
+  }
+};
+
+
 export const checkAuthStatus = async () => {
   const token = await AsyncStorage.getItem('userToken');
   const userData = await AsyncStorage.getItem('userData');

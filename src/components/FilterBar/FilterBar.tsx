@@ -19,9 +19,9 @@ interface FilterBarProps {
   onClose: () => void;
   showFavorites: boolean;
   onToggleFavorites: () => void;
-  categories: string[]; // Mevcut tüm kategoriler
-  selectedCategories: string[]; // Seçilmiş kategoriler
-  onToggleCategory: (category: string) => void; // Kategori seçim işleyicisi
+  categories: string[]; 
+  selectedCategories: string[]; 
+  onToggleCategory: (category: string) => void; 
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({
@@ -36,20 +36,20 @@ const FilterBar: React.FC<FilterBarProps> = ({
   const height = useSharedValue(0);
   const opacity = useSharedValue(0);
   const insets = useSafeAreaInsets();
-  // Kategorilerin açık/kapalı durumu için state
+  
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
 
-  // Görünürlük değiştiğinde animasyon uygula
+  
   useEffect(() => {
     if (visible) {
-      // Kategori sayısına göre yüksekliği dinamik olarak ayarla
-      // Favori filtresi + kategori başlığı + her kategori için ekstra alan
-      const baseHeight = 60; // Temel yükseklik
-      const categoryAreaHeight = categories.length > 0 ? 30 : 0; // Kategori başlığı yüksekliği
+      
+      
+      const baseHeight = 60; 
+      const categoryAreaHeight = categories.length > 0 ? 30 : 0; 
 
-      // Kategoriler açıksa kategori yüksekliği hesapla, değilse 0
+      
       const categoryRowsHeight = categoriesExpanded
-        ? Math.ceil(categories.length / 3) * 30 // Her satır için 30 birim (3 kategori yan yana)
+        ? Math.ceil(categories.length / 3) * 30 
         : 0;
 
       const calculatedHeight =
@@ -69,7 +69,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     }
   }, [visible, categories.length, categoriesExpanded]);
 
-  // Kategori başlığına tıklandığında çalışacak fonksiyon
+  
   const toggleCategories = () => {
     setCategoriesExpanded(!categoriesExpanded);
   };
@@ -81,7 +81,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
     };
   });
 
-  // Header'ın yüksekliğini ve üst boşluğu hesaplayarak konumlandırma yapıyoruz
+  
   const headerHeight = hp("8%");
   const topPosition = insets.top + headerHeight + hp("1%");
 

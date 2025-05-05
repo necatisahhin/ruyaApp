@@ -9,68 +9,72 @@ import styles from "./CustomHeaderStyles";
 
 interface CustomHeaderProps {
   title: string;
-  // Sol buton özellikleri
+  
   showBackButton?: boolean;
   leftIcon?: keyof typeof Ionicons.glyphMap;
   leftIconColor?: string;
   onLeftPress?: () => void;
-  // Sağ buton özellikleri
+  
   rightIcon?: keyof typeof Ionicons.glyphMap;
   rightIconColor?: string;
   onRightPress?: () => void;
-  // İkinci sağ buton özellikleri (opsiyonel)
-  secondRightIcon?: keyof typeof Ionicons.glyphMap;
-  secondRightIconColor?: string;
-  onSecondRightPress?: () => void;
+  
+  rightIcon2?: keyof typeof Ionicons.glyphMap;
+  rightIcon2Color?: string;
+  onRightPress2?: () => void;
 }
 
 const CustomHeader: React.FC<CustomHeaderProps> = ({
   title,
-  // Sol buton props'ları
+  
   showBackButton = false,
   leftIcon,
   leftIconColor = "#FFFFFF",
   onLeftPress,
-  // Sağ buton props'ları
+  
   rightIcon,
   rightIconColor = "#FFFFFF",
   onRightPress,
-  // İkinci sağ buton props'ları
-  secondRightIcon,
-  secondRightIconColor = "#FFFFFF",
-  onSecondRightPress,
+  
+  rightIcon2,
+  rightIcon2Color = "#FFFFFF",
+  onRightPress2,
 }) => {
   const navigation = useNavigation();
-  // Güvenli alan sınırlarını alıyoruz
+  
   const insets = useSafeAreaInsets();
 
-  // Sol buton için işlem fonksiyonu
+  
   const handleLeftButtonPress = () => {
-    // Özel işlem tanımlanmışsa onu kullan, yoksa ve geri butonu ise navigation.goBack() çağır
+    
+    
     if (onLeftPress) {
       onLeftPress();
-    } else if (showBackButton) {
+    } 
+    
+    else if (showBackButton) {
+      
       navigation.goBack();
+    } 
+    
+    else if (leftIcon === "search") {
+      
+      
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: "TabNavigator",
+          params: {
+            screen: "RuyaList",
+            params: { toggleSearch: true },
+          },
+        })
+      );
     }
   };
 
-  // Arama butonuna tıklandığında
-  const handleSearchPress = () => {
-    // CommonActions kullanarak doğru navigasyon
-    navigation.dispatch(
-      CommonActions.navigate({
-        name: "TabNavigator",
-        params: {
-          screen: "RuyaList",
-          params: { toggleSearch: true },
-        },
-      })
-    );
-  };
-
-  // Filtre butonuna tıklandığında
+  
   const handleFilterPress = () => {
-    // CommonActions kullanarak doğru navigasyon
+    
     navigation.dispatch(
       CommonActions.navigate({
         name: "TabNavigator",
@@ -86,7 +90,7 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
     <View
       style={[
         styles.container,
-        // Üst kısımda güvenli alan için dinamik padding ekliyoruz
+        
         { top: insets.top },
       ]}
     >
@@ -129,16 +133,16 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({
       {/* Sağ taraf - Butonlar bölgesi */}
       <View style={styles.rightButtonsContainer}>
         {/* İkinci sağ buton (varsa) */}
-        {secondRightIcon && (
+        {rightIcon2 && (
           <TouchableOpacity
             style={styles.rightButton}
-            onPress={onSecondRightPress}
-            disabled={!onSecondRightPress}
+            onPress={onRightPress2}
+            disabled={!onRightPress2}
           >
             <Ionicons
-              name={secondRightIcon}
+              name={rightIcon2}
               size={24}
-              color={secondRightIconColor}
+              color={rightIcon2Color}
             />
           </TouchableOpacity>
         )}

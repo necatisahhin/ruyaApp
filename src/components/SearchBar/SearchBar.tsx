@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import { View, TextInput, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, TextInput, TouchableOpacity, Keyboard } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   useSharedValue,
@@ -31,8 +31,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const opacity = useSharedValue(0);
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
+  const [searchText, setSearchText] = useState("");
 
-  // Görünürlük değiştiğinde animasyon uygula
+  
   useEffect(() => {
     if (visible) {
       height.value = withTiming(60, {
@@ -41,17 +42,30 @@ const SearchBar: React.FC<SearchBarProps> = ({
       });
       opacity.value = withTiming(1, { duration: 400 });
 
-      // Input'a odaklan
+      
       setTimeout(() => {
         inputRef.current?.focus();
-      }, 300);
+      }, 100); 
     } else {
       height.value = withTiming(0, {
         duration: 300,
         easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       });
       opacity.value = withTiming(0, { duration: 200 });
+      
+      
+      setSearchText("");
+      
+      
+      Keyboard.dismiss();
     }
+    
+    
+    return () => {
+      if (!visible) {
+        setSearchText("");
+      }
+    };
   }, [visible]);
 
   const animatedStyles = useAnimatedStyle(() => {
@@ -61,7 +75,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     };
   });
 
-  // Header'ın yüksekliğini ve üst boşluğu hesaplayarak konumlandırma yapıyoruz
+  
+  const handleTextChange = (text: string) => {
+    setSearchText(text);
+    onSearch(text);
+  };
+
+  
   const headerHeight = hp("8%");
   const topPosition = insets.top + headerHeight + hp("1%");
 
@@ -81,7 +101,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
           style={styles.input}
           placeholder={placeholder}
           placeholderTextColor="#999"
-          onChangeText={onSearch}
+          value={searchText}
+          onChangeText={handleTextChange}
+          returnKeyType="search"
+          autoCapitalize="none"
+          autoCorrect={false}
+          clearButtonMode="while-editing"
         />
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <Ionicons name="close" size={20} color="#6A356B" />

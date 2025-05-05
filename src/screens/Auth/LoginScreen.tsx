@@ -37,13 +37,13 @@ const LoginScreen = () => {
   const { returnScreen, returnParams } = route.params || {};
 
   const handleLogin = async () => {
-    // Form doğrulama
+    
     if (!email || !password) {
       Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
       return;
     }
 
-    // Email formatı doğrulama
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Hata', 'Lütfen geçerli bir e-posta adresi girin.');
@@ -53,21 +53,21 @@ const LoginScreen = () => {
     setIsLoading(true);
     
     try {
-      // API'ye giriş isteği gönder
+      
       const userData = await login(email, password);
       
-      // Başarılı giriş
+      
       if (userData) {
-        // Eğer bir dönüş ekranı belirtilmişse oraya yönlendir
+        
         if (returnScreen) {
           navigation.navigate(returnScreen as keyof RootStackParamList, returnParams);
         } else {
-          // Yoksa ana ekrana yönlendir
+          
           navigation.navigate('TabNavigator', { screen: 'RuyaList' });
         }
       }
     } catch (error) {
-      // Hata durumunda kullanıcıya bildir
+      
       Alert.alert('Giriş Hatası', 'E-posta veya şifre hatalı.');
       console.error('Login error:', error);
     } finally {
@@ -76,7 +76,7 @@ const LoginScreen = () => {
   };
 
   const navigateToRegister = () => {
-    // @ts-ignore - Navigasyon tiplerini daha sonra düzenleyeceğiz
+    
     navigation.navigate('Register');
   };
 

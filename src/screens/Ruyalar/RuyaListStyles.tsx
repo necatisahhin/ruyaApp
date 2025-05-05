@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "column",
-    position: "relative", // SearchBar için positioning desteği
+    position: "relative", 
   },
   backgroundGradient: {
     flex: 1,
@@ -33,18 +33,18 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 200,
   },
-  // Yeni stiller ekleyelim
+  
   listContentContainer: {
-    paddingTop: hp("10%"), // Bu değer RuyaList.tsx içinde dinamik olacak
-    paddingBottom: hp("12%"), // TabBar için daha fazla boşluk
+    paddingTop: hp("10%"), 
+    paddingBottom: hp("12%"), 
   },
-  // Aktif filtreler için gösterge
+  
   activeFiltersContainer: {
     position: "absolute",
-    // top değeri kaldırıldı - dinamik olarak verilecek
+    
     width: wp("95%"),
-    backgroundColor: "rgba(75, 0, 130, 0.8)", // Mor-mavi gradyan renk tonuna uygun
-    borderRadius: 20, // Daha modern görünüm için köşeleri yuvarlatıldı
+    backgroundColor: "rgba(75, 0, 130, 0.8)", 
+    borderRadius: 20, 
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 1,
   },
-  // Yükleme göstergesi için stiller
+  
   loadingContainer: {
     position: "absolute",
     top: 0,
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0.5, height: 0.5 },
     textShadowRadius: 2,
   },
-  // Hata mesajı için stiller
+  
   errorContainer: {
     flex: 1,
     justifyContent: "center",

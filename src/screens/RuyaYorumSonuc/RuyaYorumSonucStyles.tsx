@@ -5,10 +5,10 @@ import {
 } from "react-native-responsive-screen";
 
 const styles = StyleSheet.create({
-  // Ana container stilleri
+  
   container: {
     flex: 1,
-    backgroundColor: "#1E1A33", // Koyu mor arka plan
+    backgroundColor: "#1E1A33", 
   },
   mainScrollView: {
     flex: 1,
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // Arka plan gradientleri
+  
   backgroundGradient: {
     position: "absolute",
     width: "100%",
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
 
-  // Üst başlık bölümü
+  
   headerSection: {
     width: wp("90%"),
     marginBottom: hp("3%"),
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
 
-  // İçerik bölümleri
+  
   contentSection: {
     width: wp("90%"),
     marginBottom: hp("2.5%"),
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     marginBottom: hp("1.5%"),
   },
   dreamContent: {
-    backgroundColor: "rgba(255, 255, 255, 0.07)", // Çok hafif şeffaf beyaz
+    backgroundColor: "rgba(255, 255, 255, 0.07)", 
     borderRadius: 16,
     padding: wp("5%"),
     overflow: "hidden",
@@ -105,13 +105,13 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 
-  // Yorum bölümü
+  
   interpretationSection: {
     width: wp("90%"),
     marginBottom: hp("2.5%"),
   },
   interpretationContent: {
-    backgroundColor: "rgba(255, 255, 255, 0.07)", // Çok hafif şeffaf beyaz
+    backgroundColor: "rgba(255, 255, 255, 0.07)", 
     borderRadius: 16,
     padding: wp("5%"),
     overflow: "hidden",
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 
-  // Buton stilleri
+  
   actionButtonsContainer: {
     width: wp("90%"),
     marginTop: hp("2%"),
@@ -158,16 +158,16 @@ const styles = StyleSheet.create({
     marginLeft: wp("2%"),
   },
 
-  // Geri butonu
+  
   backButtonContainer: {
     position: "absolute",
     top: hp("5%"),
     left: wp("5%"),
-    zIndex: 1000, // zIndex değerini artırıyoruz
+    zIndex: 1000, 
   },
   backButton: {
-    width: 45, // Butonun genişliğini artırıyoruz
-    height: 45, // Butonun yüksekliğini artırıyoruz
+    width: 45, 
+    height: 45, 
     justifyContent: "center",
     alignItems: "center",
   },

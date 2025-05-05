@@ -38,29 +38,29 @@ import { saveDream } from "../../services/dreamService";
 import { RootStackParamList } from "../../navigation/RootNavigator";
 import { StackNavigationProp } from "@react-navigation/stack";
 
-// UUID kütüphanesi olmadığı için benzersiz ID üretecek basit bir fonksiyon
+
 const generateUniqueId = () => {
   return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
 };
 
-// Route parametre tiplerini tanımlayalım
+
 interface RouteParams {
   baslik: string;
   icerik: string;
   kategori: string;
   yorum: string;
   tarih: Date;
-  fromSavedDream?: boolean; // Kayıtlı rüyadan geliyorsa true olacak yeni parametre
+  fromSavedDream?: boolean; 
 }
 
-// Navigasyon tipini tanımlayalım
+
 type RuyaYorumSonucNavigationProp = StackNavigationProp<RootStackParamList>;
 
 const RuyaYorumSonucScreen: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation<RuyaYorumSonucNavigationProp>();
 
-  // Route parametrelerine tiplerini uygulayalım
+  
   const { baslik, icerik, kategori, yorum, tarih, fromSavedDream } =
     route.params as RouteParams;
 
@@ -68,10 +68,10 @@ const RuyaYorumSonucScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Glow efekti için animasyon değeri
+  
   const glowOpacity = useSharedValue(0.6);
 
-  // Kullanıcı giriş durumunu kontrol et
+  
   useEffect(() => {
     const checkLoginStatus = async () => {
       const userToken = await AsyncStorage.getItem('userToken');
@@ -81,9 +81,9 @@ const RuyaYorumSonucScreen: React.FC = () => {
     checkLoginStatus();
   }, []);
 
-  // Animasyon efekti için
+  
   useEffect(() => {
-    // Glow efekti animasyonu
+    
     glowOpacity.value = withRepeat(
       withSequence(
         withTiming(0.8, { duration: 2000, easing: Easing.sin }),
@@ -94,14 +94,14 @@ const RuyaYorumSonucScreen: React.FC = () => {
     );
   }, []);
 
-  // Glow animasyon stili
+  
   const glowAnimatedStyle = useAnimatedStyle(() => {
     return {
       opacity: glowOpacity.value,
     };
   });
 
-  // Tarih formatı için yardımcı fonksiyon
+  
   const formatTarih = (tarih: Date): string => {
     if (typeof tarih === "string") return tarih;
 
@@ -112,9 +112,9 @@ const RuyaYorumSonucScreen: React.FC = () => {
     });
   };
 
-  // Rüyayı kaydetme işlevi
+  
   const handleSaveToMyDreams = async () => {
-    // Kullanıcı giriş yapmamışsa uyarı göster
+    
     if (!isLoggedIn) {
       Alert.alert(
         "Giriş Gerekli",
@@ -136,7 +136,7 @@ const RuyaYorumSonucScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Backend'e rüya kaydetme isteği gönder
+      
       const dreamData = {
         title: baslik,
         content: icerik,
@@ -146,11 +146,11 @@ const RuyaYorumSonucScreen: React.FC = () => {
 
       const response = await saveDream(dreamData);
 
-      // Başarılı kayıt
+      
       if (response.success) {
         setIsSaved(true);
         
-        // Aynı zamanda yerel dummy verilere de ekleyelim (geçici çözüm)
+        
         const newDream: Ruya = {
           id: response.data.id.toString(),
           baslik: baslik,
@@ -187,7 +187,7 @@ const RuyaYorumSonucScreen: React.FC = () => {
     }
   };
 
-  // Paylaşma işlevi
+  
   const handleShareDream = async () => {
     try {
       const shareMessage = `Rüya Yorumu: ${baslik}\n\n${yorum}\n\nEl Emeği Rüya Yorumlama uygulaması ile yorumlandı.`;
@@ -208,12 +208,12 @@ const RuyaYorumSonucScreen: React.FC = () => {
     }
   };
 
-  // Geri gitme işlevi
+  
   const handleGoBack = () => {
     navigation.goBack();
   };
 
-  // Rüyalarım sayfasına gitme işlevi
+  
   const handleGoToMyDreams = () => {
     navigation.navigate("TabNavigator", { screen: "RuyaBak" });
   };
@@ -257,7 +257,7 @@ const RuyaYorumSonucScreen: React.FC = () => {
           style={styles.backButton}
           onPress={handleGoBack}
           activeOpacity={0.7}
-          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }} // Dokunma alanını genişletiyoruz
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }} 
         >
           <View style={styles.backButtonInner}>
             <Ionicons name="arrow-back" size={24} color="#1E1A33" />
@@ -359,7 +359,7 @@ const RuyaYorumSonucScreen: React.FC = () => {
               </LinearGradient>
             </TouchableOpacity>
           ) : (
-            // Kayıtlı rüyadan geliyorsa geri dön butonu göster
+            
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleGoBack}

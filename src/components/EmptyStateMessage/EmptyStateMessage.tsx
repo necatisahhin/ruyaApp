@@ -17,8 +17,8 @@ const EmptyStateMessage: React.FC<EmptyStateMessageProps> = ({
   showFavorites = false,
   customMessage,
 }) => {
-  // Özel mesaj verilmişse onu kullan,
-  // yoksa duruma göre favori mesajı veya genel mesaj göster
+  
+  
   const message = customMessage
     ? customMessage
     : showFavorites

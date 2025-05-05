@@ -1,7 +1,7 @@
 import axios from "react-native-axios"; // axios yerine react-native-axios kullanıyoruz
 
 const OPENROUTER_API_KEY =
-  "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";
+  "your-openrouter-api-key";
 
 // OpenRouter API'ye istek atmak için temel yapılandırma
 const openRouterApi = axios.create({

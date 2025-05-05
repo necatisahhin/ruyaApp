@@ -3,7 +3,7 @@ export interface Ruya {
   baslik: string;
   icerik: string;
   tarih?: Date;
-  isFavorite?: boolean; // Favori durumunu takip etmek için yeni alan
+  isFavorite?: boolean; 
   kategori: string;
-  yorum?: string; // Rüya yorumunu saklamak için yeni eklenen alan
+  yorum?: string; 
 }

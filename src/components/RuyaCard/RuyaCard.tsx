@@ -23,7 +23,7 @@ interface RuyaCardProps {
   onPress?: (ruya: Ruya) => void;
   onFavoriteToggle?: (id: string) => void;
   onDelete?: (id: string) => void;
-  onViewInterpretation?: (ruya: Ruya) => void; // Yorum görüntüleme için yeni prop
+  onViewInterpretation?: (ruya: Ruya) => void; 
 }
 
 const RuyaCard: React.FC<RuyaCardProps> = ({
@@ -33,31 +33,31 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
   onDelete,
   onViewInterpretation,
 }) => {
-  // Menü durumu
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Yorum görünürlük durumu
+  
   const [isInterpretationVisible, setIsInterpretationVisible] = useState(false);
 
-  // Menü animasyon değerleri
+  
   const menuHeight = useSharedValue(0);
   const menuOpacity = useSharedValue(0);
   const rotateValue = useSharedValue(0);
 
-  // Menü butonları animasyon değerleri
+  
   const menuScale = useSharedValue(0.5);
   const buttonPressFeedback = useSharedValue(1);
   const shareButtonX = useSharedValue(-50);
   const deleteButtonX = useSharedValue(50);
-  const viewInterpretationButtonX = useSharedValue(-50); // Yorum butonu için yeni animasyon değeri
+  const viewInterpretationButtonX = useSharedValue(-50); 
   const menuItemsOpacity = useSharedValue(0);
   const gradientPosition = useSharedValue(0);
 
-  // Yorum bölümü için animasyon değerleri
+  
   const interpretationHeight = useSharedValue(0);
   const interpretationOpacity = useSharedValue(0);
   const interpretationRotate = useSharedValue(0);
 
-  // Gradient pozisyonu için animasyon
+  
   useEffect(() => {
     gradientPosition.value = withRepeat(
       withTiming(4, { duration: 10000, easing: Easing.linear }),
@@ -66,7 +66,7 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     );
   }, []);
 
-  // Tarih formatı için yardımcı fonksiyon
+  
   const formatTarih = (tarih: Date | string | undefined): string => {
     if (tarih === undefined) return "";
     if (typeof tarih === "string") return tarih;
@@ -80,9 +80,9 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     return "";
   };
 
-  // Favori butonuna tıklandığında çağrılacak fonksiyon
+  
   const handleFavoritePress = () => {
-    // Basma animasyonu
+    
     buttonPressFeedback.value = withSequence(
       withTiming(0.9, { duration: 100 }),
       withTiming(1, { duration: 100 })
@@ -126,13 +126,13 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     }
   };
 
-  // Menü açma/kapama animasyonları
+  
   const toggleMenu = () => {
     const newMenuState = !isMenuOpen;
     setIsMenuOpen(newMenuState);
 
     if (newMenuState) {
-      // Menü açılırken
+      
       rotateValue.value = withSpring(1, { damping: 14, stiffness: 100 });
       menuHeight.value = withSpring(200, {
         damping: 12,
@@ -142,7 +142,7 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
       menuOpacity.value = withTiming(1, { duration: 300 });
       menuScale.value = withSpring(1, { damping: 14, stiffness: 90 });
 
-      // Buton animasyonları
+      
       shareButtonX.value = withDelay(
         150,
         withSpring(0, { damping: 12, stiffness: 70 })
@@ -157,13 +157,13 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
       );
       menuItemsOpacity.value = withDelay(150, withTiming(1, { duration: 300 }));
     } else {
-      // Menü kapanırken
+      
       rotateValue.value = withSpring(0, { damping: 14, stiffness: 100 });
       menuHeight.value = withTiming(0, { duration: 300 });
       menuOpacity.value = withTiming(0, { duration: 200 });
       menuScale.value = withTiming(0.5, { duration: 300 });
 
-      // Buton animasyonları
+      
       shareButtonX.value = withTiming(-50, { duration: 200 });
       deleteButtonX.value = withTiming(50, { duration: 200 });
       viewInterpretationButtonX.value = withTiming(-50, { duration: 200 });
@@ -171,9 +171,9 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     }
   };
 
-  // Paylaş butonu işleyicisi
+  
   const handleShare = () => {
-    // Buton basma animasyonu
+    
     buttonPressFeedback.value = withSequence(
       withTiming(0.9, { duration: 100 }),
       withTiming(1, { duration: 300 })
@@ -188,9 +188,9 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     });
   };
 
-  // Silme işlemi için onay soracak fonksiyon
+  
   const handleDelete = () => {
-    // Buton basma animasyonu
+    
     buttonPressFeedback.value = withSequence(
       withTiming(0.9, { duration: 100 }),
       withTiming(1, { duration: 300 })
@@ -216,7 +216,7 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
             if (onDelete) {
               onDelete(ruya.id);
 
-              // Silme işlemi tamamlandığında toast gösterme
+              
               ToastManager.show({
                 message: `${ruya.baslik} rüyanız silindi.`,
                 type: "info",
@@ -226,7 +226,7 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
                 duration: 2000,
               });
 
-              // Rüya silindikten sonra menüyü kapat, çünkü artık kart silineceği için
+              
               toggleMenu();
             }
           },
@@ -236,27 +236,27 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     });
   };
 
-  // Rüya kartına tıklandığında çağrılacak fonksiyon
+  
   const handleCardPress = () => {
     if (onPress) {
       onPress(ruya);
     }
   };
 
-  // Rüya yorumunu kartın içinde gösterme/gizleme fonksiyonu
+  
   const toggleInterpretationVisibility = () => {
-    // Menüyü kapat (açıksa)
+    
     if (isMenuOpen) {
       toggleMenu();
     }
 
-    // Yorumu göster/gizle
+    
     const newState = !isInterpretationVisible;
     setIsInterpretationVisible(newState);
 
-    // Yorumun görünürlüğüne göre animasyon değerlerini güncelle
+    
     if (newState) {
-      // Yorumu göster - yükseklik değerini 200'den 300'e çıkarıyoruz
+      
       interpretationHeight.value = withSpring(230, {
         damping: 12,
         stiffness: 90,
@@ -268,7 +268,7 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
         stiffness: 100,
       });
     } else {
-      // Yorumu gizle
+      
       interpretationHeight.value = withTiming(0, { duration: 300 });
       interpretationOpacity.value = withTiming(0, { duration: 200 });
       interpretationRotate.value = withSpring(0, {
@@ -278,25 +278,25 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     }
   };
 
-  // Rüya yorumunu görüntüleme işlemi için fonksiyon
+  
   const handleViewInterpretation = () => {
-    // Buton basma animasyonu
+    
     buttonPressFeedback.value = withSequence(
       withTiming(0.9, { duration: 100 }),
       withTiming(1, { duration: 300 })
     );
 
-    // Rüyanın yorumunu console'a yazdır
+    
     console.log(`Rüya Yorumu (${ruya.baslik}):`, ruya.yorum);
 
-    // Menüyü kapat
+    
     toggleMenu();
 
-    // Kart içinde yorumu göster/gizle
+    
     toggleInterpretationVisibility();
   };
 
-  // Animasyon stilleri
+  
   const chevronAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       { rotate: `${interpolate(rotateValue.value, [0, 1], [0, 90])}deg` },
@@ -332,13 +332,13 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     ],
   }));
 
-  // Yorum alanı için animasyon stili
+  
   const interpretationContainerAnimatedStyle = useAnimatedStyle(() => ({
     height: interpretationHeight.value,
     opacity: interpretationOpacity.value,
   }));
 
-  // Yorum ikonu için animasyon stili
+  
   const interpretationIconAnimatedStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -351,7 +351,7 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
     ],
   }));
 
-  // Yorum görüntüleme butonu için animasyon stili
+  
   const viewInterpretationButtonAnimatedStyle = useAnimatedStyle(() => {
     return {
       opacity: menuItemsOpacity.value,
@@ -545,7 +545,7 @@ const RuyaCard: React.FC<RuyaCardProps> = ({
               activeOpacity={0.7}
             >
               <LinearGradient
-                colors={["#4CAF50", "#66BB6A", "#81C784"]} // Her zaman yeşil göster
+                colors={["#4CAF50", "#66BB6A", "#81C784"]} 
                 style={styles.menuItemGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}

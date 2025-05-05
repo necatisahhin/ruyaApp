@@ -1,11 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// API URL'si - geliştirme ortamında localhost yerine IP adresinizi kullanın
-const API_URL = 'http://10.0.2.2:5000/api/dreams'; // Android Emulator için
-// const API_URL = 'http://localhost:5000/api/dreams'; // iOS Simulator için
 
-// Axios instance oluştur
+const API_URL = 'http://localhost:5001/api/dreams';
+
+
+
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -13,7 +13,7 @@ const api = axios.create({
   },
 });
 
-// Request interceptor - her istekte token ekle
+
 api.interceptors.request.use(
   async (config) => {
     const token = await AsyncStorage.getItem('userToken');
@@ -27,7 +27,7 @@ api.interceptors.request.use(
   }
 );
 
-// Rüya kaydetme
+
 export const saveDream = async (dreamData) => {
   try {
     const response = await api.post('/', dreamData);
@@ -37,7 +37,7 @@ export const saveDream = async (dreamData) => {
   }
 };
 
-// Kullanıcının tüm rüyalarını getir
+
 export const getUserDreams = async () => {
   try {
     const response = await api.get('/');
@@ -47,7 +47,7 @@ export const getUserDreams = async () => {
   }
 };
 
-// Tek bir rüyayı getir
+
 export const getDream = async (dreamId) => {
   try {
     const response = await api.get(`/${dreamId}`);
@@ -57,7 +57,7 @@ export const getDream = async (dreamId) => {
   }
 };
 
-// Rüyayı güncelle
+
 export const updateDream = async (dreamId, dreamData) => {
   try {
     const response = await api.put(`/${dreamId}`, dreamData);
@@ -67,7 +67,7 @@ export const updateDream = async (dreamId, dreamData) => {
   }
 };
 
-// Rüyayı sil
+
 export const deleteDream = async (dreamId) => {
   try {
     const response = await api.delete(`/${dreamId}`);
@@ -77,7 +77,7 @@ export const deleteDream = async (dreamId) => {
   }
 };
 
-// Rüyayı favorilere ekle/çıkar
+
 export const toggleFavorite = async (dreamId, isFavorite) => {
   try {
     const response = await api.put(`/${dreamId}`, { isFavorite });

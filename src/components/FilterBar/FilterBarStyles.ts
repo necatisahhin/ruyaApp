@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     marginHorizontal: wp("2.5%"),
     borderRadius: 15,
     overflow: "hidden",
-    // Sabit değer yerine hesaplanan değer kullanılacak
+    
     marginTop: 0,
     position: "absolute",
     zIndex: 900,
@@ -23,8 +23,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-    // Top değeri dinamik olarak ayarlanacak
-    top: hp("10%"), // Bu değeri FilterBar bileşeninde dinamik olarak hesaplayacağız
+    
+    top: hp("10%"), 
   },
   filterContainer: {
     flexDirection: "row",
@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
   closeButton: {
     padding: 5,
   },
-  // Kategori başlığını bir container içinde düzenleyip
-  // tıklanabilir hale getirmek için yeni stil
+  
+  
   categoryTitleContainer: {
     flexDirection: "row",
     alignItems: "center",

@@ -37,15 +37,15 @@ import { interpretDream } from "../../services/openRouterService";
 import { useNavigation } from "@react-navigation/native";
 import { getUserProfile } from "../../services/authService";
 
-// Düşük performanslı cihazlar için animasyon iyileştirmeleri
+
 const LOW_PERFORMANCE_MODE = Platform.OS === 'android' && Platform.Version < 26;
-const DISABLE_ANIMATIONS = false; // İsteğe bağlı olarak tamamen kapatmak için
+const DISABLE_ANIMATIONS = false; 
 
 const RuyaBak = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
-  // State'ler
+  
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -58,14 +58,14 @@ const RuyaBak = () => {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
 
-  // Animasyon değerleri
+  
   const moonRotation = useSharedValue(0);
   const moonScale = useSharedValue(0.9);
   const moonY = useSharedValue(0);
   const glowOpacity = useSharedValue(0.4);
   const glowScale = useSharedValue(1);
   
-  // Yıldızlar için animasyon değerleri
+  
   const starsOpacity = Array(12)
     .fill(0)
     .map(() => useSharedValue(0));
@@ -73,13 +73,13 @@ const RuyaBak = () => {
     .fill(0)
     .map(() => useSharedValue(0.2));
     
-  // Form animasyon değerleri
+  
   const formScale = useSharedValue(0.9);
   const formOpacity = useSharedValue(0);
   const submitButtonScale = useSharedValue(1);
   const submitButtonRotate = useSharedValue(0);
 
-  // Klavye durumunu takip et
+  
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
@@ -100,7 +100,7 @@ const RuyaBak = () => {
     };
   }, []);
 
-  // Kullanıcı profil bilgilerini yükle
+  
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -112,18 +112,18 @@ const RuyaBak = () => {
         });
       } catch (error) {
         console.error("Profil bilgileri yüklenirken hata:", error);
-        // Hata durumunda sessizce devam et, profil bilgileri olmadan da rüya yorumlanabilir
+        
       }
     };
 
     fetchUserProfile();
   }, []);
 
-  // Animasyonları başlat
+  
   useEffect(() => {
-    // Düşük performans modunda veya animasyonlar devre dışı bırakıldıysa animasyonları azalt
+    
     if (DISABLE_ANIMATIONS) {
-      // Animasyonlar devre dışı - statik değerler kullan
+      
       formOpacity.value = 1;
       formScale.value = 1;
       moonRotation.value = 0;
@@ -132,7 +132,7 @@ const RuyaBak = () => {
       glowOpacity.value = 0.5;
       glowScale.value = 1;
       
-      // Yıldızlara sabit değerler ata
+      
       starsOpacity.forEach((opacity) => {
         opacity.value = 0.5;
       });
@@ -143,7 +143,7 @@ const RuyaBak = () => {
       return;
     }
     
-    // Form animasyonu
+    
     formOpacity.value = withDelay(500, withTiming(1, { duration: 800 }));
     formScale.value = withDelay(
       500,
@@ -153,26 +153,26 @@ const RuyaBak = () => {
       })
     );
 
-    // Düşük performans modunda daha hafif animasyonlar kullan
+    
     if (LOW_PERFORMANCE_MODE) {
-      // Ay dönüş animasyonu - daha da yavaş ve daha az yenilenen
+      
       moonRotation.value = withRepeat(
         withTiming(360, { duration: 120000, easing: Easing.linear }),
         -1,
         false
       );
       
-      // Diğer animasyonlar için basitleştirilmiş versiyonlar
+      
       moonScale.value = 1;
       moonY.value = 0;
       glowOpacity.value = 0.5;
       glowScale.value = 1;
       
-      // Yalnızca bir kaç yıldız için animasyon kullan
-      const animatedStarCount = 3; // Çok az sayıda yıldız
+      
+      const animatedStarCount = 3; 
       
       for (let i = 0; i < animatedStarCount; i++) {
-        const index = i * 4; // Daha fazla boşluk bırak
+        const index = i * 4; 
         if (index < starsOpacity.length) {
           starsOpacity[index].value = withRepeat(
             withSequence(
@@ -183,7 +183,7 @@ const RuyaBak = () => {
             true
           );
           
-          // Diğer tüm yıldızları statik tut
+          
           starsScale.forEach((scale, i) => {
             scale.value = 0.8;
           });
@@ -193,15 +193,15 @@ const RuyaBak = () => {
       return;
     }
 
-    // Normal mod - optimize edilmiş animasyonlar
-    // Ay dönüş animasyonu - daha yavaş ve daha az performans gerektiren süre
+    
+    
     moonRotation.value = withRepeat(
       withTiming(360, { duration: 60000, easing: Easing.linear }),
       -1,
       false
     );
 
-    // Ay boyut ve pozisyon animasyonu - süreyi uzatarak CPU kullanımını azaltma
+    
     moonScale.value = withRepeat(
       withSequence(
         withTiming(1.05, { duration: 5000, easing: Easing.bezier(0.4, 0, 0.2, 1) }),
@@ -220,7 +220,7 @@ const RuyaBak = () => {
       true
     );
 
-    // Parlaklık animasyonu - süreyi uzatarak CPU kullanımını azaltma
+    
     glowOpacity.value = withRepeat(
       withSequence(
         withTiming(0.7, { duration: 6000, easing: Easing.bezier(0.4, 0, 0.2, 1) }),
@@ -239,16 +239,16 @@ const RuyaBak = () => {
       true
     );
 
-    // Yıldızlar için animasyonlar - daha az yoğun ve daha az sayıda animasyon
-    // Yıldızların tamamı yerine sadece yarısını animasyonla hareket ettiriyoruz
+    
+    
     const maxStars = Math.floor(starsOpacity.length / 2);
     
     for (let i = 0; i < maxStars; i++) {
-      // Sadece çift sayılı yıldızları canlandır
+      
       const index = i * 2; 
       
       starsOpacity[index].value = withDelay(
-        index * 600, // Delay süresini artırarak aynı anda daha az animasyon çalıştırma
+        index * 600, 
         withRepeat(
           withSequence(
             withTiming(0.9, {
@@ -266,7 +266,7 @@ const RuyaBak = () => {
       );
       
       starsScale[index].value = withDelay(
-        index * 600, // Delay süresini artırarak aynı anda daha az animasyon çalıştırma
+        index * 600, 
         withRepeat(
           withSequence(
             withTiming(1, {
@@ -283,7 +283,7 @@ const RuyaBak = () => {
         )
       );
       
-      // Diğer yıldızlara sabit değerler ata
+      
       if (index + 1 < starsOpacity.length) {
         starsOpacity[index + 1].value = 0.5;
         starsScale[index + 1].value = 0.8;
@@ -291,7 +291,7 @@ const RuyaBak = () => {
     }
   }, []);
 
-  // Animasyon stilleri
+  
   const moonAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -309,7 +309,7 @@ const RuyaBak = () => {
     };
   });
 
-  // Form animasyon stilleri
+  
   const formAnimatedStyle = useAnimatedStyle(() => {
     return {
       opacity: formOpacity.value,
@@ -326,7 +326,7 @@ const RuyaBak = () => {
     };
   });
 
-  // Yıldız pozisyonları
+  
   const starPositions = [
     { top: hp("5%"), left: wp("15%") },
     { top: hp("8%"), right: wp("20%") },
@@ -342,7 +342,7 @@ const RuyaBak = () => {
     { top: hp("23%"), right: wp("40%") },
   ];
 
-  // Form gönderme fonksiyonu
+  
   const handleSubmit = async () => {
     if (!title) {
       ToastManager.show({
@@ -364,7 +364,7 @@ const RuyaBak = () => {
       return;
     }
 
-    // Buton animasyonu
+    
     submitButtonScale.value = withSequence(
       withTiming(0.9, { duration: 100 }),
       withTiming(1.1, { duration: 200 }),
@@ -380,7 +380,7 @@ const RuyaBak = () => {
     setIsLoading(true);
     setLoadingProgress(0);
 
-    // İlerleme simülasyonu için zamanlayıcı
+    
     const progressInterval = setInterval(() => {
       setLoadingProgress((prevProgress) => {
         if (prevProgress < 95) {
@@ -391,7 +391,7 @@ const RuyaBak = () => {
     }, 800);
 
     try {
-      // Rüya yorumlama API'sine istek at
+      
       const dreamInterpretation = await interpretDream(
         title,
         description,
@@ -399,14 +399,14 @@ const RuyaBak = () => {
         userProfile
       );
 
-      // Zamanlayıcıyı temizle
+      
       clearInterval(progressInterval);
       setLoadingProgress(100);
 
-      // Yükleme durumunu kapat
+      
       setIsLoading(false);
 
-      // Sonuç sayfasına yönlendir
+      
       navigation.navigate("RuyaYorumSonuc", {
         baslik: title,
         icerik: description,
@@ -415,7 +415,7 @@ const RuyaBak = () => {
         tarih: new Date(),
       });
     } catch (error) {
-      // Zamanlayıcıyı temizle
+      
       clearInterval(progressInterval);
 
       setIsLoading(false);
